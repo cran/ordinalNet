@@ -1,8 +1,8 @@
 Package: ordinalNet
 Type: Package
 Title: Penalized Ordinal Regression
-Version: 1.1
-Date: 2015-11-21
+Version: 1.2
+Date: 2015-11-24
 Authors@R: person("Mike", "Wurm", email = "wurm@wisc.edu",
     role = c("aut", "cre"))
 Description: Fits ordinal regression models with elastic net penalty.
@@ -11,10 +11,11 @@ Description: Fits ordinal regression models with elastic net penalty.
 LazyData: TRUE
 License: MIT + file LICENSE
 Imports: stats
-Suggests: testthat, MASS, glmnet, penalized, ordinalgmifs, nnet
+Suggests: testthat, MASS, glmnet (>= 2.0-1), penalized, ordinalgmifs,
+        nnet
 NeedsCompilation: no
-Packaged: 2015-11-21 17:44:31 UTC; mike
+Packaged: 2015-11-24 23:41:13 UTC; mike
 Author: Mike Wurm [aut, cre]
 Maintainer: Mike Wurm <wurm@wisc.edu>
 Repository: CRAN
-Date/Publication: 2015-11-22 11:48:29
+Date/Publication: 2015-11-25 08:54:27

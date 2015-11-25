@@ -590,7 +590,7 @@ coef.ordinalNetFit <- function(object, whichLambda=NULL, criteria=c("aic", "bic"
 #' @param ... Not used. Additional predict arguments.
 #' @return A vector of predicted class numbers or a matrix of fitted class probabilities,
 #' depending on \code{type}.
-#' #' @examples
+#' @examples
 #' set.seed(10)
 #' x <- matrix(rnorm(50*5), ncol=5)
 #' beta <- c(1, 0, 0, 0, 0)

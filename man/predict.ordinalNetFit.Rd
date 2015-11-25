@@ -27,7 +27,6 @@ or a matrix of fitted class probabilities.}
 \value{
 A vector of predicted class numbers or a matrix of fitted class probabilities,
 depending on \code{type}.
-#'
 }
 \description{
 Obtains predicted class numbers or fitted class probabilities for either
