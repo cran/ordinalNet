@@ -1,4 +1,4 @@
-library(testthat)
 library(ordinalNet)
+testthatInst <- require(testthat)
 
-test_check("ordinalNet")
+if (testthatInst) test_check("ordinalNet")

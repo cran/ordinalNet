@@ -1,8 +1,9 @@
-library(MASS)
-library(glmnet)
-library(penalized)
-library(ordinalgmifs)
-library(nnet)
+MASSinst <- require(MASS)
+glmnetInst <- require(glmnet)
+glmnet201Inst <- if (glmnetInst) packageVersion("glmnet") >= "2.0-1" else FALSE
+penalizedInst <- require(penalized)
+ordinalgmifsInst <- require(ordinalgmifs)
+nnetInst <- require(nnet)
 
 set.seed(4)
 n <- 50
@@ -61,20 +62,28 @@ multinomialLink <- makeMultinomialLink()
 ###############################################################################
 
 test_that("Unpenalized ordinal logit matches MASS::polr", {
+    if (!MASSinst) skip("MASS not available")
     o2 <- ordinalNet(x, y, lambdaVals=0)
-    p2 <- polr(y~x)
+    p2 <- MASS::polr(y~x)
     expect_equal(coef(o2), c(p2$zeta, -p2$coef), check.attributes=F, tolerance=1e-3)
 })
 
-test_that("Elastic net binary logistic regression matches penalized and glmnet", {
+test_that("Elastic net binary logistic regression matches glmnet", {
+    if (!glmnetInst) skip("glmnet not installed")
     o3 <- ordinalNet(x, yy, alpha=.5, lambdaVals=.1, epsIn=1e-8, epsOut=1e-8)
-    p3 <- penalized(yy, x, model="logistic", lambda1=.5*.1*n, lambda2=.5*.1*n, standardize=T, trace=F)
     g3 <- glmnet(x, yy, family="binomial", alpha=.5, lambda=.1)
-    expect_equal(coef(o3), c(-p3@unpenalized, -p3@penalized), check.attributes=F, tolerance=1e-3)
     expect_equal(coef(o3), c(-g3$a0, -as.vector(g3$beta)), check.attributes=F, tolerance=1e-3)
 })
 
+test_that("Elastic net binary logistic regression matches penalized", {
+    if (!penalizedInst) skip("penalized not installed")
+    o3 <- ordinalNet(x, yy, alpha=.5, lambdaVals=.1, epsIn=1e-8, epsOut=1e-8)
+    p3 <- penalized(yy, x, model="logistic", lambda1=.5*.1*n, lambda2=.5*.1*n, standardize=T, trace=F)
+    expect_equal(coef(o3), c(-p3@unpenalized, -p3@penalized), check.attributes=F, tolerance=1e-3)
+})
+
 test_that("Elastic net binary logistic regression with positve constraints and some unpenalized terms matches penalized", {
+    if (!penalizedInst) skip("penalized not installed")
     o4 <- ordinalNet(x, yy, standardize=F, lambdaVals=.1, alpha=.5,
                      penalizeID=c(F, rep(T, p-1)), positiveID=rep(T, p), epsIn=1e-8, epsOut=1e-8)
     p4 <- penalized(yy, penalized=-x[,-1], unpenalized=cbind(Intercept=-1, -x[,1]), model="logistic",
@@ -83,12 +92,14 @@ test_that("Elastic net binary logistic regression with positve constraints and s
 })
 
 test_that("Best AIC ordinal logit matches ordinalgmifs", {
+    if (!ordinalgmifsInst) skip("ordinalgmifs not installed")
     o6 <- ordinalNet(x, y, standardize=F)
     og6 <- ordinal.gmifs(y ~ 1, x=names(data.frame(x)), data.frame(x), eps=.01, scale=F)
     expect_equal(coef(o6), coef(og6), check.attributes=F, tolerance=.05)
 })
 
 test_that("Elastic net multinomial logistic regression matches glmnet", {
+    if (!glmnet201Inst) skip("glmnet (>= 2.0-1) not installed")
     m7 <- mirlsNet(xLS, yMat, alpha=.5, lambdaVals=.1, linkfun=multinomialLink,
                    penalizeID=rep(c(F, rep(T, p)), k), betaStart=rep(0, (p+1)*k),
                    epsIn=1e-8, epsOut=1e-8)
@@ -100,6 +111,7 @@ test_that("Elastic net multinomial logistic regression matches glmnet", {
 })
 
 test_that("Unpenalized multinomial logistic regression matches nnet::multinom", {
+    if (!nnetInst) skip("nnet not installed")
     m8 <- mirlsNet(xLS, yMat, lambdaVals=0, linkfun=multinomialLink,
                    penalizeID=rep(c(F, rep(T, p)), k), betaStart=rep(0, (p+1)*k),
                    epsIn=1e-8, epsOut=1e-8)

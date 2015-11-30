@@ -1,4 +1,4 @@
-7b73674e0f1589c6af42a0ebdac9cb27 *DESCRIPTION
+fd382d391f344693424c1b66c93012b4 *DESCRIPTION
 06bcbb4345de007d9658b30363ac4067 *LICENSE
 e7633a4e9686aa55440e622cb2d437ac *NAMESPACE
 4808c346c0ad545e593648abfbe8f66d *R/ordinalNet.R
@@ -6,5 +6,5 @@ e7633a4e9686aa55440e622cb2d437ac *NAMESPACE
 949051bfdf26df1fd77e2767adf11948 *man/ordinalNet.Rd
 5710206eb1dc76e060196da17201403b *man/predict.ordinalNetFit.Rd
 0582bb670cc3235f2fae64250f285335 *man/print.ordinalNetFit.Rd
-92b58d19299dbe431db242557d2a5b80 *tests/testthat.R
-c25e663c6fab2998ac3b8c7ae804e6ce *tests/testthat/test-ordinalNet.R
+cc659af7b6b6bc227370c3bffea98b62 *tests/testthat.R
+f8d0cd57b5e4ce62275504c671939b1d *tests/testthat/test-ordinalNet.R
