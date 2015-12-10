@@ -508,8 +508,8 @@ predict.mirlsNetFit <- function(object, newx=NULL, whichLambda=NULL, criteria=c(
     criteria <- match.arg(criteria)
     if (is.null(whichLambda)) whichLambda <- which.min(object$icVals[,criteria])
     betaHat <- object$betaHat[whichLambda,]
-    xLS <- ifelse(is.null(newx), object$xLS, makeOrdinalXLS(newx, ncol(object$yMat)))
-    etaLS <- lapply(object$xLS, function(x) x %*% betaHat)
+    xLS <- if (is.null(newx)) object$xLS else makeOrdinalXLS(newx, ncol(object$yMat))
+    etaLS <- lapply(xLS, function(x) x %*% betaHat)
     probLS <- lapply(etaLS, object$linkfun$h)
     probLS <- lapply(probLS, function(p) c(p, 1-sum(p)))
     probMat <- do.call(rbind, probLS)

@@ -1,27 +1,14 @@
-MASSinst <- require(MASS)
-glmnetInst <- require(glmnet)
-glmnet201Inst <- if (glmnetInst) packageVersion("glmnet") >= "2.0-1" else FALSE
-penalizedInst <- require(penalized)
-ordinalgmifsInst <- require(ordinalgmifs)
-nnetInst <- require(nnet)
+load("../testdata.rda")
 
-set.seed(4)
-n <- 50
-k <- 3
-p <- 5
-betaNonzeroVals <- c(1, 1)
-zeta <- seq(-1, 1, length.out=k-1)
-beta <- c(betaNonzeroVals, rep(0, p-2))
-x <- matrix(rnorm(n*p, sd=2), nrow=n)
-eta <- as.vector(x%*%beta) + matrix(rep(zeta, each=n), ncol=(k-1))
-cdf <- exp(eta) / (1+exp(eta))
-prob <- cbind(cdf, 1) - cbind(0, cdf)
-y <- as.factor(sapply(1:n, function(i) sample(1:k, 1, prob=prob[i,])))
-
-yy <- y
-levels(yy) <- c(1, 1, 2)
-xSD <- apply(x, 2, sd) * sqrt((n-1)/n)
-xScaled <- x / rep(xSD, each=n)
+###############################################################################
+## Tests compare ordinalNet results with other packages in special cases where
+## comparisons are possible:
+## e.g. unpenalized ordinal logistic regression can be compared with MASS::polr
+## e.g. penalized binary logistic regression can be compared with glmnet and penalized
+##
+## Data and results from other packages are stored in testdata.rda so that the
+## tests can be run without package and version dependencies.
+###############################################################################
 
 ###############################################################################
 ## Make multinomial matrices and link function
@@ -62,60 +49,59 @@ multinomialLink <- makeMultinomialLink()
 ###############################################################################
 
 test_that("Unpenalized ordinal logit matches MASS::polr", {
-    if (!MASSinst) skip("MASS not available")
+#     p2 <- polr(y~x)
+#     p2_coef <- c(p2$zeta, -p2$coef)
     o2 <- ordinalNet(x, y, lambdaVals=0)
-    p2 <- MASS::polr(y~x)
-    expect_equal(coef(o2), c(p2$zeta, -p2$coef), check.attributes=F, tolerance=1e-3)
+    expect_equal(coef(o2), p2_coef, check.attributes=F, tolerance=1e-3)
 })
 
 test_that("Elastic net binary logistic regression matches glmnet", {
-    if (!glmnetInst) skip("glmnet not installed")
+#     g3 <- glmnet(x, yy, family="binomial", alpha=.5, lambda=.1)
+#     g3_coef <- c(-g3$a0, -as.vector(g3$beta))
     o3 <- ordinalNet(x, yy, alpha=.5, lambdaVals=.1, epsIn=1e-8, epsOut=1e-8)
-    g3 <- glmnet(x, yy, family="binomial", alpha=.5, lambda=.1)
-    expect_equal(coef(o3), c(-g3$a0, -as.vector(g3$beta)), check.attributes=F, tolerance=1e-3)
+    expect_equal(coef(o3), g3_coef, check.attributes=F, tolerance=1e-3)
 })
 
 test_that("Elastic net binary logistic regression matches penalized", {
-    if (!penalizedInst) skip("penalized not installed")
+#     p3 <- penalized(yy, x, model="logistic", lambda1=.5*.1*n, lambda2=.5*.1*n, standardize=T, trace=F)
+#     p3_coef <- c(-p3@unpenalized, -p3@penalized)
     o3 <- ordinalNet(x, yy, alpha=.5, lambdaVals=.1, epsIn=1e-8, epsOut=1e-8)
-    p3 <- penalized(yy, x, model="logistic", lambda1=.5*.1*n, lambda2=.5*.1*n, standardize=T, trace=F)
-    expect_equal(coef(o3), c(-p3@unpenalized, -p3@penalized), check.attributes=F, tolerance=1e-3)
+    expect_equal(coef(o3), p3_coef, check.attributes=F, tolerance=1e-3)
 })
 
 test_that("Elastic net binary logistic regression with positve constraints and some unpenalized terms matches penalized", {
-    if (!penalizedInst) skip("penalized not installed")
+#     p4 <- penalized(yy, penalized=-x[,-1], unpenalized=cbind(Intercept=-1, -x[,1]), model="logistic",
+#                     lambda1=.5*.1*n, lambda2=.5*.1*n, positive=T, standardize=F, trace=F)
+#     p4_coef <-  c(p4@unpenalized, p4@penalized)
     o4 <- ordinalNet(x, yy, standardize=F, lambdaVals=.1, alpha=.5,
                      penalizeID=c(F, rep(T, p-1)), positiveID=rep(T, p), epsIn=1e-8, epsOut=1e-8)
-    p4 <- penalized(yy, penalized=-x[,-1], unpenalized=cbind(Intercept=-1, -x[,1]), model="logistic",
-                    lambda1=.5*.1*n, lambda2=.5*.1*n, positive=T, standardize=F, trace=F)
-    expect_equal(coef(o4), c(p4@unpenalized, p4@penalized), check.attributes=F, tolerance=1e-3)
+    expect_equal(coef(o4), p4_coef, check.attributes=F, tolerance=1e-3)
 })
 
 test_that("Best AIC ordinal logit matches ordinalgmifs", {
-    if (!ordinalgmifsInst) skip("ordinalgmifs not installed")
+#     og6 <- ordinal.gmifs(y ~ 1, x=names(data.frame(x)), data.frame(x), eps=.01, scale=F)
+#     og6_coef <- coef(og6)
     o6 <- ordinalNet(x, y, standardize=F)
-    og6 <- ordinal.gmifs(y ~ 1, x=names(data.frame(x)), data.frame(x), eps=.01, scale=F)
-    expect_equal(coef(o6), coef(og6), check.attributes=F, tolerance=.05)
+    expect_equal(coef(o6), og6_coef, check.attributes=F, tolerance=.05)
 })
 
 test_that("Elastic net multinomial logistic regression matches glmnet", {
-    if (!glmnet201Inst) skip("glmnet (>= 2.0-1) not installed")
+#     g7 <- glmnet(xScaled, y, alpha=.5, lambda=.1, family="multinomial", standardize=F)
+#     g7_coef <- as.vector(Reduce(rbind, coef(g7)))
     m7 <- mirlsNet(xLS, yMat, alpha=.5, lambdaVals=.1, linkfun=multinomialLink,
                    penalizeID=rep(c(F, rep(T, p)), k), betaStart=rep(0, (p+1)*k),
                    epsIn=1e-8, epsOut=1e-8)
-    g7 <- glmnet(xScaled, y, alpha=.5, lambda=.1, family="multinomial", standardize=F)
-    g7_coef <- as.vector(Reduce(rbind, coef(g7)))
     shift <- coef(m7)[1] - g7_coef[1]
     g7_coef[seq(1, (p+1)*(k-1)+1, length.out=k)] <- g7_coef[seq(1, (p+1)*(k-1)+1, length.out=k)] + shift
     expect_equal(coef(m7), g7_coef, check.attributes=F, tolerance=1e-3)
 })
 
 test_that("Unpenalized multinomial logistic regression matches nnet::multinom", {
-    if (!nnetInst) skip("nnet not installed")
+#     mu8 <- multinom(y ~ xScaled)
+#     mu8_coef <- c(t(coef(mu8)))
     m8 <- mirlsNet(xLS, yMat, lambdaVals=0, linkfun=multinomialLink,
                    penalizeID=rep(c(F, rep(T, p)), k), betaStart=rep(0, (p+1)*k),
                    epsIn=1e-8, epsOut=1e-8)
-    mu8 <- multinom(y ~ xScaled)
     m8_coef <- coef(m8)[-(1:(p+1))] - rep(coef(m8)[1:(p+1)], k-1)
-    expect_equal(m8_coef, c(t(coef(mu8))), check.attributes=F, tolerance=1e-3)
+    expect_equal(m8_coef, mu8_coef, check.attributes=F, tolerance=1e-3)
 })
