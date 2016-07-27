@@ -12,10 +12,10 @@ ordinalNet(x, y, alpha = 1, standardize = TRUE, penalizeID = NULL,
   betaMin = 1e-08, convNorm = Inf, zetaStart = NULL, thetaStart = NULL)
 }
 \arguments{
-\item{x}{Covariate matrix}
+\item{x}{Covariate matrix.}
 
-\item{y}{Response variable, either an ordered factor or a matrix
-where each row is a multinomial vector of counts}
+\item{y}{Response variable. Either an ordered factor or a matrix
+where each row is a multinomial vector of counts.}
 
 \item{alpha}{The elastic net mixing parameter, with \eqn{0\le\alpha\le1}.
 \code{alpha=1} is the lasso penalty, and \code{alpha=0} is the ridge penalty.
@@ -52,11 +52,14 @@ to calculate the maximum lambda value.}
 
 \item{epsOut}{Convergence threshold for the algorithm's outer loop. The outer
 loop optimizes optimizes the Fisher Scoring quadratic approximation to the
-penalized log likelihood.}
+penalized log likelihood. The default value is relatively high to speed up
+computation time. It is recommended to keep \code{epsOut} equal to \code{epsIn}.}
 
 \item{epsIn}{Convergence threshold for the algorithm's inner loop. The inner
 loop cycles through and updates the coefficient estimates using coordinate
-descent. Each cycle is one iteration.}
+descent. Each cycle is one iteration. The default value is relatively high to
+speed up computation time. It is recommended to keep \code{epsOut} equal to
+\code{epsIn}.}
 
 \item{maxiterOut}{Maximum number of outer loop iterations.}
 
@@ -69,7 +72,7 @@ small \code{lambda} values as the coefficient estimates diverge to \eqn{+/-\inft
 \item{betaMin}{If a coefficient estimate falls below \code{betaMin}, it is
 set to zero. This improves the stability and speed of the fitting algorithm.}
 
-\item{convNorm}{The Lp norm of the coefficient estimate relative changes is
+\item{convNorm}{The L-p norm of the coefficient estimate relative changes is
 computed after each iteration of the inner or outer loop. Convergence of the
 loop is assessed by comparing this value to the convergence threshold
 (\code{epsIn} or \code{epsOut}). \code{convNorm=Inf} is the default and
@@ -82,7 +85,11 @@ terms (must be non-decreasing). Default is a uniform sequency from -1 to 1.}
 terms. Default is zero for all coefficients.}
 }
 \value{
-An object with S3 class "ordinalNetFit".
+An object with S3 class "ordinalNetFit". This includes a matrix of
+coefficient estimates (if covariates were scaled with \code{standardize=TRUE},
+the coefficients are returned on the original scale). It also includes a list
+called "mirlsNetFit" containing arguments used in the multiple iteratively
+re-weighted least squares optimization routine.
 }
 \description{
 Fits ordinal regression models with elastic net penalty.

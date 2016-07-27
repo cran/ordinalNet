@@ -313,7 +313,8 @@ mirlsNet <-function(xLS, yMat, alpha=1, penalizeID, positiveID=rep(FALSE, nVar),
     if (is.null(lambdaVals))
     {
         if (trace) cat("Lambda", 1, " of ", nLambda, "\n", sep='')
-        mods[[1]] <- mirlsNetSV(xLS, yMat, yLS, lambda=Inf, alpha, penalizeID, positiveID,
+        # note lambda=Inf, alpha=1 will find the intercept only solution
+        mods[[1]] <- mirlsNetSV(xLS, yMat, yLS, lambda=Inf, alpha=1, penalizeID, positiveID,
                                 linkfun, betaStart, quadApp, trace, epsOut, epsIn, maxiterOut,
                                 maxiterIn, pMin, betaMin, convNorm, ordinalCheck)
         betaStart <- mods[[1]]$betaHat
@@ -361,9 +362,9 @@ mirlsNet <-function(xLS, yMat, alpha=1, penalizeID, positiveID=rep(FALSE, nVar),
 #' regularizaton parameter \code{lambda}. The algorithm uses Fisher Scoring
 #' with Coordinate Descent updates.
 #'
-#' @param x Covariate matrix
-#' @param y Response variable, either an ordered factor or a matrix
-#' where each row is a multinomial vector of counts
+#' @param x Covariate matrix.
+#' @param y Response variable. Either an ordered factor or a matrix
+#' where each row is a multinomial vector of counts.
 #' @param alpha The elastic net mixing parameter, with \eqn{0\le\alpha\le1}.
 #' \code{alpha=1} is the lasso penalty, and \code{alpha=0} is the ridge penalty.
 #' See "Details".
@@ -389,10 +390,13 @@ mirlsNet <-function(xLS, yMat, alpha=1, penalizeID, positiveID=rep(FALSE, nVar),
 #' @param trace If \code{trace=TRUE} the algorithm progress is printed to the terminal.
 #' @param epsOut Convergence threshold for the algorithm's outer loop. The outer
 #' loop optimizes optimizes the Fisher Scoring quadratic approximation to the
-#' penalized log likelihood.
+#' penalized log likelihood. The default value is relatively high to speed up
+#' computation time. It is recommended to keep \code{epsOut} equal to \code{epsIn}.
 #' @param epsIn Convergence threshold for the algorithm's inner loop. The inner
 #' loop cycles through and updates the coefficient estimates using coordinate
-#' descent. Each cycle is one iteration.
+#' descent. Each cycle is one iteration. The default value is relatively high to
+#' speed up computation time. It is recommended to keep \code{epsOut} equal to
+#' \code{epsIn}.
 #' @param maxiterOut Maximum number of outer loop iterations.
 #' @param maxiterIn Maximum number of inner loop iterations.
 #' @param pMin If for any observation, the fitted probability for a response
@@ -400,7 +404,7 @@ mirlsNet <-function(xLS, yMat, alpha=1, penalizeID, positiveID=rep(FALSE, nVar),
 #' small \code{lambda} values as the coefficient estimates diverge to \eqn{+/-\infty}.
 #' @param betaMin If a coefficient estimate falls below \code{betaMin}, it is
 #' set to zero. This improves the stability and speed of the fitting algorithm.
-#' @param convNorm The Lp norm of the coefficient estimate relative changes is
+#' @param convNorm The L-p norm of the coefficient estimate relative changes is
 #' computed after each iteration of the inner or outer loop. Convergence of the
 #' loop is assessed by comparing this value to the convergence threshold
 #' (\code{epsIn} or \code{epsOut}). \code{convNorm=Inf} is the default and
@@ -409,7 +413,11 @@ mirlsNet <-function(xLS, yMat, alpha=1, penalizeID, positiveID=rep(FALSE, nVar),
 #' terms (must be non-decreasing). Default is a uniform sequency from -1 to 1.
 #' @param thetaStart Optional user-specified starting values for the non-intercept
 #' terms. Default is zero for all coefficients.
-#' @return An object with S3 class "ordinalNetFit".
+#' @return An object with S3 class "ordinalNetFit". This includes a matrix of
+#' coefficient estimates (if covariates were scaled with \code{standardize=TRUE},
+#' the coefficients are returned on the original scale). It also includes a list
+#' called "mirlsNetFit" containing arguments used in the multiple iteratively
+#' re-weighted least squares optimization routine.
 #' @details
 #' The ordinal model has the form
 #' \deqn{g(P(y\le j|x)) = Intercept[j] + x\beta,}
@@ -492,7 +500,11 @@ ordinalNet <- function(x, y, alpha=1, standardize=TRUE, penalizeID=NULL, positiv
     ordinalNetFit
 }
 
-print.mirlsNetFit <- function(x, ...) print(do.call(cbind, x[c("icVals", "lambdaVals")]))
+print.mirlsNetFit <- function(x, ...)
+{
+    cat("Summary of fit:\n")
+    print(do.call(cbind, x[c("icVals", "lambdaVals")]))
+}
 
 coef.mirlsNetFit <- function(object, whichLambda=NULL, criteria=c("aic", "bic"), ...)
 {

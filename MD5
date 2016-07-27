@@ -1,9 +1,9 @@
-25c2220ecbf2284c08370efe64fb641b *DESCRIPTION
-06bcbb4345de007d9658b30363ac4067 *LICENSE
+16e1f028781a123bfbb4a649adb5681e *DESCRIPTION
+8a2e09ad99cd865f0bfede253578764e *LICENSE
 dd298bc1db4492769ae76ccc2d1f0b07 *NAMESPACE
-5158f71845e4e231af2a40a2f721f7d4 *R/ordinalNet.R
+1141bcc46deaaa5ace77592d223dd330 *R/ordinalNet.R
 ab9db970f16cec070bddb8afad3590da *man/coef.ordinalNetFit.Rd
-e78f8986c84c17f59d015bea1a5c5c63 *man/ordinalNet.Rd
+9d8b038b094c56391187b7ffbf66ce1a *man/ordinalNet.Rd
 50690511b5a521e031f65a73de031928 *man/predict.ordinalNetFit.Rd
 5c3c141159f72f4c9f4f89c7eca4f9e8 *man/print.ordinalNetFit.Rd
 bb9f8964180b2215ff38426b92dd5d7e *tests/testdata.rda
