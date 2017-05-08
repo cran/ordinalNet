@@ -2,7 +2,7 @@
 
 S3method(coef,ordinalNetFit)
 S3method(predict,ordinalNetFit)
-S3method(print,ordinalNetFit)
+S3method(summary,ordinalNetFit)
 export(ordinalNet)
-importFrom(stats,make.link)
-importFrom(stats,sd)
+export(ordinalNetCV)
+export(ordinalNetTune)

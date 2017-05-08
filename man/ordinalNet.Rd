@@ -2,128 +2,315 @@
 % Please edit documentation in R/ordinalNet.R
 \name{ordinalNet}
 \alias{ordinalNet}
-\title{Penalized ordinal regression}
+\title{Ordinal regression models with elastic net penalty}
 \usage{
-ordinalNet(x, y, alpha = 1, standardize = TRUE, penalizeID = NULL,
-  positiveID = NULL, link = c("logit", "probit", "cloglog", "cauchit"),
-  lambdaVals = NULL, nLambda = 100, lambdaMinRatio = ifelse(nObs < nVar,
-  0.01, 1e-04), alphaMin = 0.01, trace = FALSE, epsOut = 0.001,
-  epsIn = 0.001, maxiterOut = Inf, maxiterIn = Inf, pMin = 1e-20,
-  betaMin = 1e-08, convNorm = Inf, zetaStart = NULL, thetaStart = NULL)
+ordinalNet(x, y, alpha = 1, standardize = TRUE, penaltyFactors = NULL,
+  positiveID = NULL, family = c("cumulative", "sratio", "cratio", "acat"),
+  reverse = FALSE, link = c("logit", "probit", "cloglog", "cauchit"),
+  customLink = NULL, parallelTerms = TRUE, nonparallelTerms = FALSE,
+  parallelPenaltyFactor = 1, lambdaVals = NULL, nLambda = 20,
+  lambdaMinRatio = 0.01, includeLambda0 = FALSE, alphaMin = 0.01,
+  pMin = 1e-08, stopThresh = 1e-04, threshOut = 1e-08, threshIn = 1e-08,
+  maxiterOut = 100, maxiterIn = 1000, printIter = FALSE,
+  printBeta = FALSE, warn = TRUE, keepTrainingData = TRUE)
 }
 \arguments{
-\item{x}{Covariate matrix.}
+\item{x}{Covariate matrix. It is recommended that categorical covariates are
+converted to a set of indicator variables with a variable for each category
+(i.e. no baseline category); otherwise the choice of baseline category will
+affect the model fit.}
 
-\item{y}{Response variable. Either an ordered factor or a matrix
-where each row is a multinomial vector of counts.}
+\item{y}{Response variable. Can be a factor, ordered factor, or a matrix
+where each row is a multinomial vector of counts. A weighted fit can be obtained
+using the matrix option, since the row sums are essentially observation weights.
+Non-integer matrix entries are allowed.}
 
-\item{alpha}{The elastic net mixing parameter, with \eqn{0\le\alpha\le1}.
-\code{alpha=1} is the lasso penalty, and \code{alpha=0} is the ridge penalty.
-See "Details".}
+\item{alpha}{The elastic net mixing parameter, with \code{0 <= alpha <= 1}.
+\code{alpha=1} corresponds to the lasso penalty, and \code{alpha=0} corresponds
+to the ridge penalty.}
 
 \item{standardize}{If \code{standardize=TRUE}, the predictor variables are
 scaled to have unit variance. Coefficient estimates are returned on the
 original scale.}
 
-\item{penalizeID}{Logical vector indicating whether each coefficient should
-be penalized. Default is TRUE for all coefficients.}
+\item{penaltyFactors}{Nonnegative vector of penalty factors for each variable.
+This vector is multiplied by lambda to get the penalty for each variable.
+If \code{NULL}, the penalty factor is one for each coefficient.}
 
 \item{positiveID}{Logical vector indicating whether each coefficient should
-be constrained to be non-negative. Default is FALSE for all coefficients.}
+be constrained to be non-negative. If \code{NULL}, the default value is \code{FALSE}
+for all coefficients.}
+
+\item{family}{Specifies the type of model family. Options are "cumulative"
+for cumulative probability, "sratio" for stopping ratio, "cratio" for continuation ratio,
+and "acat" for adjacent category.}
+
+\item{reverse}{Logical. If \code{TRUE}, then the "backward" form of the model
+is fit, i.e. the model is defined with response categories in reverse order.
+For example, the reverse cumulative model with \eqn{K+1} response categories
+applies the link function to the cumulative probabilities \eqn{P(Y \ge 2),
+\ldots, P(Y \ge K+1)}, rather then \eqn{P(Y \le 1), \ldots, P(Y \le K)}.}
 
 \item{link}{Specifies the link function. The options supported are logit,
-probit, complementary log-log, and cauchit.}
+probit, complementary log-log, and cauchit. Only used if \code{customLink=NULL}.}
 
-\item{lambdaVals}{An optional user-specified lambda sequence. Typical usage is to
-have the program compute its own \code{lambda} sequence based on \code{nLambda}
-and \code{lambdaMinRatio}.}
+\item{customLink}{Optional list containing a vectorized link function \code{g},
+a vectorized inverse link \code{h}, and the Jacobian function of the inverse link
+\code{getQ}. The Jacobian should be defined as \eqn{\partial h(\eta) / \partial \eta^T}
+(as opposed to the transpose of this matrix).}
 
-\item{nLambda}{The number of \code{lambda} values in the solution path.
-Default is 100.}
+\item{parallelTerms}{Logical. If \code{TRUE}, then parallel coefficient terms
+will be included in the model. \code{parallelTerms} and \code{nonparallelTerms}
+cannot both be \code{FALSE}.}
 
-\item{lambdaMinRatio}{Smallest value for \code{lambda} as a fraction of the maximum
-lambda. (The maximum lambda is the smallest value that sets all penalized
-coefficients to zero.)}
+\item{nonparallelTerms}{Logical. if \code{TRUE}, then nonparallel coefficient terms
+will be included in the model. \code{parallelTerms} and \code{nonparallelTerms}
+cannot both be \code{FALSE}.}
 
-\item{alphaMin}{If \code{alpha < alphaMin}, then \code{alphaMin} is used
-to calculate the maximum lambda value.}
+\item{parallelPenaltyFactor}{Numeric value greater than or equal to zero. Lambda
+is multiplied by this factor (as well as variable-specific \code{penaltyFactors})
+to obtain the penalties for parallel terms. Only used if \code{parallelTerms=TRUE}.}
 
-\item{trace}{If \code{trace=TRUE} the algorithm progress is printed to the terminal.}
+\item{lambdaVals}{An optional user-specified lambda sequence (vector). If \code{NULL},
+a sequence will be generated based on \code{nLambda} and \code{lambdaMinRatio}.
+In this case, the maximum lambda is the smallest value that sets all penalized
+coefficients to zero, and the minimum lambda is the maximum value multiplied
+by the factor \code{lambdaMinRatio}.}
 
-\item{epsOut}{Convergence threshold for the algorithm's outer loop. The outer
-loop optimizes optimizes the Fisher Scoring quadratic approximation to the
-penalized log likelihood. The default value is relatively high to speed up
-computation time. It is recommended to keep \code{epsOut} equal to \code{epsIn}.}
+\item{nLambda}{Positive integer. The number of lambda values in the solution path.
+Only used if \code{lambdaVals=NULL}.}
 
-\item{epsIn}{Convergence threshold for the algorithm's inner loop. The inner
-loop cycles through and updates the coefficient estimates using coordinate
-descent. Each cycle is one iteration. The default value is relatively high to
-speed up computation time. It is recommended to keep \code{epsOut} equal to
-\code{epsIn}.}
+\item{lambdaMinRatio}{A factor greater than zero and less than one. Only used
+if \code{lambdaVals=NULL}.}
+
+\item{includeLambda0}{Logical. If \code{TRUE}, then zero is added to the end
+of the sequence of \code{lambdaVals}. This is not done by default because
+it can significantly increase computational time. An unpenalized saturated model
+may have infinite coefficient solutions, in which case the fitting algorithm
+will still terminate when the relative change in log-likelihood becomes small.
+Only used if \code{lambdaVals=NULL}.}
+
+\item{alphaMin}{Value greater than zero, but much less than one.
+If \code{alpha < alphaMin}, then \code{alphaMin} is used to calculate the
+maximum lambda value. When \code{alpha=0}, the maximum lambda value would be
+infinite otherwise.}
+
+\item{pMin}{Value greater than zero, but much less than one. During the optimization
+routine, the Fisher information is calculated using fitted probabilities. For
+this calculation, fitted probabilities are capped below by this value to prevent
+numerical instability.}
+
+\item{stopThresh}{In the relative log-likelihood change between successive
+lambda values falls below this threshold, then the last model fit is used for all
+remaining lambda.}
+
+\item{threshOut}{Convergence threshold for the coordinate descent outer loop.
+The optimization routine terminates when the relative change in the
+penalized log-likelihood between successive iterations falls below this threshold.
+It is recommended to set \code{theshOut} equal to \code{threshIn}.}
+
+\item{threshIn}{Convergence threshold for the coordinate descent inner loop. Each
+iteration consists of a single loop through each coefficient. The inner
+loop terminates when the relative change in the penalized approximate
+log-likelihood between successive iterations falls below this threshold.
+It is recommended to set \code{theshOut} equal to \code{threshIn}.}
 
 \item{maxiterOut}{Maximum number of outer loop iterations.}
 
 \item{maxiterIn}{Maximum number of inner loop iterations.}
 
-\item{pMin}{If for any observation, the fitted probability for a response
-category falls below pMin, the algorithm is terminated. This can occur for
-small \code{lambda} values as the coefficient estimates diverge to \eqn{+/-\infty}.}
+\item{printIter}{Logical. If \code{TRUE}, the optimization routine progress is
+printed to the terminal.}
 
-\item{betaMin}{If a coefficient estimate falls below \code{betaMin}, it is
-set to zero. This improves the stability and speed of the fitting algorithm.}
+\item{printBeta}{Logical. If \code{TRUE}, coefficient estimates are printed
+after each coordinate descent outer loop iteration.}
 
-\item{convNorm}{The L-p norm of the coefficient estimate relative changes is
-computed after each iteration of the inner or outer loop. Convergence of the
-loop is assessed by comparing this value to the convergence threshold
-(\code{epsIn} or \code{epsOut}). \code{convNorm=Inf} is the default and
-represents the L-\eqn{\infty} norm (maximum relative change).}
+\item{warn}{Logical. If \code{TRUE}, the following warning message is displayed
+when fitting a cumulative probability model with \code{nonparallelTerms=TRUE}
+(i.e. nonparallel or semi-parallel model).
+"Warning message: For out-of-sample data, the cumulative probability model
+with nonparallelTerms=TRUE may predict cumulative probabilities that are not
+monotone increasing."
+The warning is displayed by default, but the user may wish to disable it.}
 
-\item{zetaStart}{Optional user-specified starting values for the intercept
-terms (must be non-decreasing). Default is a uniform sequency from -1 to 1.}
-
-\item{thetaStart}{Optional user-specified starting values for the non-intercept
-terms. Default is zero for all coefficients.}
+\item{keepTrainingData}{Logical. If \code{TRUE}, then \code{x} and \code{y}
+are saved with the returned "ordinalNetFit" object. This allows
+\code{predict.ordinalNetFit} to return fitted values for the training data
+without passing a \code{newx} argument.}
 }
 \value{
-An object with S3 class "ordinalNetFit". This includes a matrix of
-coefficient estimates (if covariates were scaled with \code{standardize=TRUE},
-the coefficients are returned on the original scale). It also includes a list
-called "mirlsNetFit" containing arguments used in the multiple iteratively
-re-weighted least squares optimization routine.
+An object with S3 class "ordinalNetFit".  Model fit information can be accessed
+through the \code{coef}, \code{predict}, and \code{summary} methods.
+\describe{
+  \item{coefs}{Matrix of coefficient estimates, with each row corresponding to a lambda value.
+  (If covariates were scaled with \code{standardize=TRUE}, the coefficients are
+  returned on the original scale).}
+  \item{lambdaVals}{Sequence of lambda values. If user passed a sequence to the
+  \code{lambdaVals}, then it is this sequence. If \code{lambdaVals} argument
+  was \code{NULL}, then it is the sequence generated.}
+  \item{loglik}{Log-likelihood of each model fit.}
+  \item{nNonzero}{Number of nonzero coefficients of each model fit, including intercepts.}
+  \item{aic}{AIC, defined as \code{-2*loglik + 2*nNonzero}.}
+  \item{bic}{BIC, defined as \code{-2*loglik + log(N)*nNonzero}.}
+  \item{devPct}{Percentage deviance explained, defined as \eqn{1 - loglik/loglik_0},
+  where \eqn{loglik_0} is the log-likelihood of the null model.}
+  \item{iterOut}{Number of coordinate descent outer loop iterations until
+  convergence for each lambda value.}
+  \item{iterIn}{Number of coordinate descent inner loop iterations on last outer loop
+  for each lambda value.}
+  \item{dif}{Relative improvement in objective function on last outer loop
+  for each lambda value. Can be used to diagnose convergence issues. If \code{iterOut}
+  reached \code{maxiterOut} and \code{dif} is large, then \code{maxiterOut} should
+  be increased. If \code{dif} is negative, this means the objective did not improve
+  between successive iterations. This usually only occurs when the model is
+  saturated and/or close to convergence, so a small negative value is not of concern.
+  (When this happens, the algorithm is terminated for the current lambda value,
+  and the coefficient estimates from the previous outer loop iteration are returned.)}
+  \item{nLev}{Number of response categories.}
+  \item{nVar}{Number of covariates in \code{x}.}
+  \item{xNames}{Covariate names.}
+  \item{args}{List of arguments passed to the \code{ordinalNet} function.}
+}
 }
 \description{
-Fits ordinal regression models with elastic net penalty.
-Supported models include cumulative logit, probit, cauchit, and complementary
-log-log. The regularization path is computed at a grid of values for the
-regularizaton parameter \code{lambda}. The algorithm uses Fisher Scoring
-with Coordinate Descent updates.
+Fits ordinal regression models with elastic net penalty by coordinate descent.
+Supported model families include cumulative probability, stopping ratio, continuation ratio,
+and adjacent category. These families are a subset of vector glm's which belong to a model
+class we call the elementwise link multinomial-ordinal (ELMO) class. Each family
+in this class links a vector of covariates to a vector of class probabilities.
+Each of these families has a parallel form, which is appropriate for ordinal response
+data, as well as a nonparallel form that is appropriate for an unordered categorical
+response, or as a more flexible model for ordinal data. The parallel model
+has a single set of coefficients, whereas the nonparallel model has a set of coefficients
+for each response category except the baseline category. It is also possible
+to fit a model with both parallel and nonparallel terms, which we call the semi-parallel
+model. The semi-parallel model has the flexibility of the nonparallel model,
+but the elastic net penalty shrinks it toward the parallel model.
 }
 \details{
-The ordinal model has the form
-\deqn{g(P(y\le j|x)) = Intercept[j] + x\beta,}
-where \eqn{g(.)} is a link function, most commonly logit.
+The \code{ordinalNet} function fits regression models for a categorical response
+variable with \eqn{K+1} levels. Conditional on the covariate vector \eqn{x_i}
+(the \eqn{i^{th}} row of \code{x}), each observation has a vector of \eqn{K+1}
+class probabilities \eqn{(p_{i1}, \ldots, p_{i(K+1)})}. These probabilities
+sum to one, and can therefore be parametrized by \eqn{p_i = (p_{i1}, \ldots, p_{iK})}.
+The probabilities are mapped to a set of \eqn{K} quantities
+\eqn{\delta_i = (\delta_{i1}, \ldots, \delta_{iK}) \in (0, 1)^K}, which depends on the choice
+of model \code{family}. The elementwise \code{link} function maps
+\eqn{\delta_i} to a set of \eqn{K} linear predictors. Together, the \code{family}
+and \code{link} specifiy a link function between \eqn{p_i} and \eqn{\eta_i}.
 
-The elastic net penalty is defined as
-\deqn{\lambda{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.}
+\strong{\emph{Model families:}}
 
-The objective function is
-\deqn{-1/N*loglik + penalty.}
+Let \eqn{Y_i} denote a discrete random variable on \eqn{1, \ldots, K+1} with
+class probabilities \eqn{p_i}. Now dropping the subscript \eqn{i} on \eqn{Y_i}
+and \eqn{\delta_i}, the family definitions are as follows:
+\describe{
+  \item{Cumulative probability}{\eqn{\delta_j = P(Y \le j)}}
+  \item{Reverse cumulative probability}{\eqn{\delta_j = P(Y \ge j)}}
+  \item{Stopping ratio}{\eqn{\delta_j = P(Y = j | Y \ge j)}}
+  \item{Reverse stopping ratio}{\eqn{\delta_j = P(Y=j | Y \le j)}}
+  \item{Continuation ratio}{\eqn{\delta_j = P(Y > j | Y \ge j)}}
+  \item{Reverse continuation ratio}{\eqn{\delta_j = P(Y < j | Y \le j)}}
+  \item{Adjacent category}{\eqn{\delta_j = P(Y = j+1 | j \le Y \le j+1)}}
+  \item{Reverse adjacent category}{\eqn{\delta_j = P(Y = j | j \le Y \le j+1)}}
+}
+
+\strong{\emph{Parallel, nonparallel, and semi-parallel model forms:}}
+
+Models within each of these families can take one of three forms, which have
+different definitions for the linear predictor \eqn{\eta_i}. Suppose each
+\eqn{x_i} has length \eqn{P}. Let \eqn{b} be a length \eqn{P} vector of
+regression coefficients. Let \eqn{B} be a \eqn{P \times K} matrix of regression
+coefficient. Let \eqn{b_0} be a vector of \eqn{K} intercept terms.
+The three model forms are the following:
+\describe{
+  \item{Parallel}{\eqn{\eta_i = b_0 + b^T x_i} (\code{parallelTerms=TRUE}, \code{nonparallelTerms=FALSE})}
+  \item{Nonparallel}{\eqn{\eta_i = b_0 + B^T x_i} (\code{parallelTerms=FALSE}, \code{nonparallelTerms=TRUE})}
+  \item{Semi-parallel}{\eqn{\eta_i = b_0 + b^T x_i + B^T x_i} (\code{parallelTerms=TRUE}, \code{nonparallelTerms=TRUE})}
+}
+The parallel form has the defining property of ordinal models, which is that
+a single linear combination \eqn{b^T x_i} shifts the cumulative class probabilities
+\eqn{P(Y \le j)} in favor of either higher or lower categories. The linear predictors
+are parallel because they only differ by their intercepts (\eqn{b_0}). The nonparallel form
+is a more flexible model, and it does not shift the cumulative probabilities together.
+The semi-parallel model is equivalent to the nonparallel model, but the
+elastic net penalty shrinks the semi-parallel coefficients toward a common
+value (i.e. the parallel model), as well as shrinking all coefficients toward zero.
+The nonparallel model, on the other hand, simply shrinks all coefficients toward zero.
+When the response categories are ordinal, any of the three model forms could
+be applied. When the response categories are unordered, only the nonparallel
+model is appropriate.
+
+\strong{\emph{Elastic net penalty:}}
+
+The elastic net penalty is defined for each model form as follows. \eqn{\lambda}
+and \eqn{\alpha} are the usual elastic net tuning parameters, where \eqn{\lambda}
+determines the degree to which coefficients are shrunk toward zero, and \eqn{\alpha}
+specifies the amound of weight given to the L1 norm and squared L2 norm penalties.
+Each covariate is allowed a unique penalty factor \eqn{c_j}, which is specified with the
+\code{penaltyFactors} argument. By default \eqn{c_j = 1} for all \eqn{j}.
+The semi-parallel model has a tuning parameter \eqn{\rho} which determines the degree to
+which the parallel coefficients are penalized. Small values of \eqn{\rho} will
+result in a fit closer to the parallel model, and large values of \eqn{\rho}
+will result in a fit closer to the nonparallel model.
+\describe{
+  \item{Parallel}{\eqn{\lambda \sum_{j=1}^P c_j \{ \alpha |b_j| +
+                       \frac{1}{2} (1-\alpha) b_j^2 \}}}
+  \item{Nonparallel}{\eqn{\lambda \sum_{j=1}^P c_j \{ \sum_{k=1}^K \alpha |B_{jk}| +
+                          \frac{1}{2} (1-\alpha) B_{jk}^2 \}}}
+  \item{Semi-parallel}{\eqn{\lambda [ \rho \sum_{j=1}^P c_j \{ \alpha |b_j| +
+                            \frac{1}{2} (1-\alpha) b_j^2 \} +
+                            \sum_{j=1}^P c_j \{ \sum_{k=1}^K \alpha |B_{jk}| +
+                            \frac{1}{2} (1-\alpha) B_{jk}^2 \}]}}
+}
+
+\code{ordinalNet} minimizes the following objective function. Let \eqn{N} be
+the number of observations, which is defined as the sum of the \code{y} elements
+when \code{y} is a matrix.
+\deqn{objective = -1/N*loglik + penalty}
 }
 \examples{
-set.seed(10)
-x <- matrix(rnorm(50*5), ncol=5)
-beta <- c(1, 0, 0, 0, 0)
+# Simulate x as independent standard normal
+# Simulate y|x from a parallel cumulative logit (proportional odds) model
+set.seed(1)
+n <- 50
 intercepts <- c(-1, 1)
-xb <- x \%*\% beta
-eta <- cbind(xb+intercepts[1], xb+intercepts[2])
-probMatCumul <- 1 / (1 + exp(-eta))
-probMat <- cbind(probMatCumul, 1) - cbind(0, probMatCumul)
-y <- apply(probMat, 1, function(p) sample(1:3, size=1, prob=p))
-y <- as.factor(y)
-fit <- ordinalNet(x, y)
-print(fit)
-coef(fit)
-predict(fit, type="class")
-predict(fit, type="prob")
-}
+beta <- c(1, 1, 0, 0, 0)
+ncat <- length(intercepts) + 1  # number of response categories
+p <- length(beta)  # number of covariates
+x <- matrix(rnorm(n*p), ncol=p)  # n x p covariate matrix
+eta <- c(x \%*\% beta) + matrix(intercepts, nrow=n, ncol=ncat-1, byrow=TRUE)
+invlogit <- function(x) 1 / (1+exp(-x))
+cumprob <- t(apply(eta, 1, invlogit))
+prob <- cbind(cumprob, 1) - cbind(0, cumprob)
+yint <- apply(prob, 1, function(p) sample(1:ncat, size=1, prob=p))
+y <- as.factor(yint)
 
+# Fit parallel cumulative logit model
+fit1 <- ordinalNet(x, y, family="cumulative", link="logit",
+                   parallelTerms=TRUE, nonparallelTerms=FALSE)
+fit1
+coef(fit1)
+coef(fit1, matrix=TRUE)
+predict(fit1, type="response")
+predict(fit1, type="class")
+
+# Fit nonparallel cumulative logit model
+fit2 <- ordinalNet(x, y, family="cumulative", link="logit",
+                   parallelTerms=FALSE, nonparallelTerms=TRUE)
+fit2
+coef(fit2)
+coef(fit2, matrix=TRUE)
+predict(fit2, type="response")
+predict(fit2, type="class")
+
+# Fit semi-parallel cumulative logit model (with both parallel and nonparallel terms)
+fit3 <- ordinalNet(x, y, family="cumulative", link="logit",
+                   parallelTerms=TRUE, nonparallelTerms=TRUE)
+fit3
+coef(fit3)
+coef(fit3, matrix=TRUE)
+predict(fit3, type="response")
+predict(fit3, type="class")
+
+}
