@@ -54,7 +54,7 @@
 #' }
 #'
 #' @return
-#' A list containing the following:
+#' An S3 object of class "ordinalNetTune", which contains the following:
 #' \describe{
 #'   \item{loglik}{Matrix of out of sample log-likelihood values. Each row corresponds
 #'   to a different lambda value, and each column corresponds to a different fold.}
@@ -62,7 +62,7 @@
 #'   to a different lambda value, and each column corresponds to a different fold.}
 #'   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
 #'   \item{folds}{A list containing the index numbers of each fold.}
-#'   \item{fit}{An object of class "\code{ordinalNetFit}", resulting from fitting
+#'   \item{fit}{An object of class "ordinalNet", resulting from fitting
 #'   \code{ordinalNet} to the entire dataset.}
 #' }
 #'
@@ -86,6 +86,8 @@
 #'
 #' # Fit parallel cumulative logit model; select lambda by cross validation
 #' tunefit <- ordinalNetTune(x, y)
+#' tunefit
+#' plot(tunefit)
 #' bestLambdaIndex <- which.max(rowMeans(tunefit$loglik))
 #' coef(tunefit$fit, whichLambda=bestLambdaIndex, matrix=TRUE)
 #' predict(tunefit$fit, whichLambda=bestLambdaIndex)
@@ -136,7 +138,7 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
 
         for (j in 1:nLambda)
         {
-            pHat <- predict.ordinalNetFit(fitTrain, newx=xTest, type="response", whichLambda=j)
+            pHat <- predict.ordinalNet(fitTrain, newx=xTest, type="response", whichLambda=j)
             pHat1 <- pHat[, -ncol(pHat), drop=FALSE]
             loglik[j, i] <- getLoglik(pHat1, yMatTest)
             predClass <- apply(pHat, 1, which.max)
@@ -147,5 +149,49 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
 
     if (printProgress) cat("Done\n")
 
-    list(loglik=loglik, misclass=misclass, lambdaVals=lambdaVals, folds=folds, fit=fit)
+    out <- list(loglik=loglik, misclass=misclass, lambdaVals=lambdaVals, folds=folds, fit=fit)
+    class(out) <- "ordinalNetTune"
+    out
+}
+
+#' Print method for an "ordinalNetTune" object.
+#'
+#' Displays the average out-of-sample log-likelihood and misclassification rate
+#' for each lambda value. The average is taken over all cross validation folds.
+#'
+#' @param x An "ordinalNetTune" S3 object.
+#' @param ... Not used. Additional summary arguments.
+#'
+#' @export
+print.ordinalNetTune <- function(x, ...)
+{
+    cat("Cross validation summary\n\n")
+    loglik_avg <- rowMeans(x$loglik)
+    misclass_avg <- rowMeans(x$misclass)
+    print(data.frame(lambda=x$lambdaVals, loglik_avg=loglik_avg, misclass_avg=misclass_avg))
+    cat("\n")
+    return(NULL)
+}
+
+#' Plot method for "ordinalNetTune" object.
+#'
+#' Plots the average out-of-sample log-likelihood or misclassification rate for
+#' each lambda value in the solution path. The averae is taken over all cross
+#' validation folds.
+#'
+#' @param x An "ordinalNetTune" S3 object.
+#' @param type Which performance measure to plot. Either "loglik" or "misclass".
+#' @param ... Additional plot arguments.
+#'
+#'@export
+plot.ordinalNetTune <- function(x, type=c("loglik", "misclass"), ...)
+{
+    type <- match.arg(type)
+    y <- rowMeans(x[[type]])
+    loglambda <- log(x$lambdaVals)
+    if (type == "misclass")
+        ylab <- "avg misclass rate"
+    if (type == "loglik")
+        ylab <- "avg loglik"
+    graphics::plot(y ~ loglambda, ylab=ylab, xlab="log(lambda)", ...)
 }

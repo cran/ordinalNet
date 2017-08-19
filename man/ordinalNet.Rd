@@ -134,12 +134,12 @@ monotone increasing."
 The warning is displayed by default, but the user may wish to disable it.}
 
 \item{keepTrainingData}{Logical. If \code{TRUE}, then \code{x} and \code{y}
-are saved with the returned "ordinalNetFit" object. This allows
-\code{predict.ordinalNetFit} to return fitted values for the training data
+are saved with the returned "ordinalNet" object. This allows
+\code{predict.ordinalNet} to return fitted values for the training data
 without passing a \code{newx} argument.}
 }
 \value{
-An object with S3 class "ordinalNetFit".  Model fit information can be accessed
+An object with S3 class "ordinalNet".  Model fit information can be accessed
 through the \code{coef}, \code{predict}, and \code{summary} methods.
 \describe{
   \item{coefs}{Matrix of coefficient estimates, with each row corresponding to a lambda value.

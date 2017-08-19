@@ -73,7 +73,7 @@
 #' }
 #'
 #' @return
-#' A list containing the following:
+#' An S3 object of class "ordinalNetCV", which contains the following:
 #' \describe{
 #'   \item{loglik}{Vector of out of sample log-likelihood values. Each value
 #'   corresponds to a different fold.}
@@ -83,7 +83,7 @@
 #'   selected for each fold by the tuning method.}
 #'   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
 #'   \item{folds}{A list containing the index numbers of each fold.}
-#'   \item{fit}{An object of class "\code{ordinalNetFit}", resulting from fitting
+#'   \item{fit}{An object of class "ordinalNet", resulting from fitting
 #'   \code{ordinalNet} to the entire dataset.}
 #' }
 #'
@@ -108,8 +108,7 @@
 #' # Evaluate out-of-sample performance of the  cumulative logit model
 #' # when lambda is tuned by cross validation (best average out-of-sample log-likelihood)
 #' cv <- ordinalNetCV(x, y, tuneMethod="cvLoglik")
-#' cv$loglik
-#' cv$misclass
+#' summary(cv)
 #' }
 #'
 #' @export
@@ -172,7 +171,7 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
             bestLambdaIndex[[i]] <- which.min(fitTrain[[tuneMethod]])  # tuneMethod is either "aic" or "bic"
         }
 
-        pHat <- predict.ordinalNetFit(fitTrain, newx=xTest, type="response", whichLambda=bestLambdaIndex[[i]])
+        pHat <- predict.ordinalNet(fitTrain, newx=xTest, type="response", whichLambda=bestLambdaIndex[[i]])
         pHat1 <- pHat[, -ncol(pHat), drop=FALSE]
         loglik[i] <- getLoglik(pHat1, yMatTest)
         predClass <- apply(pHat, 1, which.max)
@@ -182,6 +181,28 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
 
     if (printProgress) cat("Done\n")
 
-    list(loglik=loglik, misclass=misclass, bestLambdaIndex=bestLambdaIndex,
-         lambdaVals=lambdaVals, folds=folds, fit=fit)
+    out <- list(loglik=loglik, misclass=misclass, bestLambdaIndex=bestLambdaIndex,
+                lambdaVals=lambdaVals, folds=folds, fit=fit)
+    class(out) <- "ordinalNetCV"
+    out
+}
+
+#' Print method for an "ordinalNetCV" object.
+#'
+#' Displays the out-of-sample log-likelihood and misclassification rate for each
+#' cross validation fold.
+#'
+#' @param x An "ordinalNetCV" S3 object
+#' @param ... Not used. Additional summary arguments.
+#'
+#' @export
+print.ordinalNetCV <- function(x, ...)
+{
+    cat("Cross validation summary\n\n")
+    lambda <- x$lambdaVals[x$bestLambdaIndex]
+    print(data.frame(lambda=lambda, loglik=x$loglik, misclass=x$misclass))
+    cat("\n")
+    cat("        Average out-of-sample log-likelihood: ", mean(x$loglik), "\n")
+    cat("Average out-of-sample misclassification rate: ", mean(x$misclass), "\n\n")
+    return(NULL)
 }

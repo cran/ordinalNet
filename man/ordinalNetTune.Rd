@@ -48,7 +48,7 @@ The warning is displayed by default, but the user may wish to disable it.}
 passed to \code{ordinalNet}.}
 }
 \value{
-A list containing the following:
+An S3 object of class "ordinalNetTune", which contains the following:
 \describe{
   \item{loglik}{Matrix of out of sample log-likelihood values. Each row corresponds
   to a different lambda value, and each column corresponds to a different fold.}
@@ -56,7 +56,7 @@ A list containing the following:
   to a different lambda value, and each column corresponds to a different fold.}
   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
   \item{folds}{A list containing the index numbers of each fold.}
-  \item{fit}{An object of class "\code{ordinalNetFit}", resulting from fitting
+  \item{fit}{An object of class "ordinalNet", resulting from fitting
   \code{ordinalNet} to the entire dataset.}
 }
 }
@@ -102,6 +102,8 @@ y <- as.factor(yint)
 
 # Fit parallel cumulative logit model; select lambda by cross validation
 tunefit <- ordinalNetTune(x, y)
+tunefit
+plot(tunefit)
 bestLambdaIndex <- which.max(rowMeans(tunefit$loglik))
 coef(tunefit$fit, whichLambda=bestLambdaIndex, matrix=TRUE)
 predict(tunefit$fit, whichLambda=bestLambdaIndex)

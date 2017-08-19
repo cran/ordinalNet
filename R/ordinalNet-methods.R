@@ -34,46 +34,26 @@ getDeltaNames <- function(family, reverse, nLev)
     deltaNames
 }
 
-#' Summary method for an "ordinalNetFit" object.
+#' Print method for an "ordinalNet" object.
+#'
 #' Provides a model fit summary as a data frame. For each \code{lambda} value in
 #' the solution path, the following information is included: degrees of freedom
 #' (number of nonzero parameters), log-likelihood, AIC, BIC, and percent deviance explained.
-#' @param object An \code{ordinalNetFit} S3 object
+#'
+#' @param x An "ordinalNet" S3 object
 #' @param ... Not used. Additional summary arguments.
 #'
-#' @return Data frame with values that summarize the fit of each \code{lambda}
-#' value in the solution path.
-#'
-#' @examples
-#' # Simulate x as independent standard normal
-#' # Simulate y|x from a parallel cumulative logit (proportional odds) model
-#' set.seed(1)
-#' n <- 50
-#' intercepts <- c(-1, 1)
-#' beta <- c(1, 1, 0, 0, 0)
-#' ncat <- length(intercepts) + 1  # number of response categories
-#' p <- length(beta)  # number of covariates
-#' x <- matrix(rnorm(n*p), ncol=p)  # n x p covariate matrix
-#' eta <- c(x %*% beta) + matrix(intercepts, nrow=n, ncol=ncat-1, byrow=TRUE)
-#' invlogit <- function(x) 1 / (1+exp(-x))
-#' cumprob <- t(apply(eta, 1, invlogit))
-#' prob <- cbind(cumprob, 1) - cbind(0, cumprob)
-#' yint <- apply(prob, 1, function(p) sample(1:ncat, size=1, prob=p))
-#' y <- as.factor(yint)
-#'
-#' # Fit parallel cumulative logit model
-#' fit <- ordinalNet(x, y)
-#' summary(fit)
-#'
 #' @export
-summary.ordinalNetFit <- function(object, ...)
+print.ordinalNet <- function(x, ...)
 {
-    with(object, data.frame(lambdaVals, nNonzero, loglik, devPct, aic, bic))
+    cat("Summary of fit\n\n")
+    print(with(x, data.frame(lambdaVals, nNonzero, loglik, devPct, aic, bic)))
+    return(NULL)
 }
 
-#' Extracts fitted coefficients from an "ordinalNetFit" object.
+#' Method to extract fitted coefficients from an "ordinalNet" object.
 #'
-#' @param object An "ordinalNetFit" S3 object.
+#' @param object An "ordinalNet" S3 object.
 #' @param matrix Logical. If \code{TRUE}, coefficient estimates are returned in
 #' matrix form. Otherwise a vector is returned.
 #' @param whichLambda Optional index number of the desired \code{lambda} within
@@ -85,30 +65,8 @@ summary.ordinalNetFit <- function(object, ...)
 #'
 #' @return The object returned depends on \code{matrix}.
 #'
-#' @examples
-#' # Simulate x as independent standard normal
-#' # Simulate y|x from a parallel cumulative logit (proportional odds) model
-#' set.seed(1)
-#' n <- 50
-#' intercepts <- c(-1, 1)
-#' beta <- c(1, 1, 0, 0, 0)
-#' ncat <- length(intercepts) + 1  # number of response categories
-#' p <- length(beta)  # number of covariates
-#' x <- matrix(rnorm(n*p), ncol=p)  # n x p covariate matrix
-#' eta <- c(x %*% beta) + matrix(intercepts, nrow=n, ncol=ncat-1, byrow=TRUE)
-#' invlogit <- function(x) 1 / (1+exp(-x))
-#' cumprob <- t(apply(eta, 1, invlogit))
-#' prob <- cbind(cumprob, 1) - cbind(0, cumprob)
-#' yint <- apply(prob, 1, function(p) sample(1:ncat, size=1, prob=p))
-#' y <- as.factor(yint)
-#'
-#' # Fit parallel cumulative logit model
-#' fit <- ordinalNet(x, y)
-#' coef(fit)
-#' coef(fit, matrix=TRUE)
-#'
 #' @export
-coef.ordinalNetFit <- function(object, matrix=FALSE, whichLambda=NULL, criteria=c("aic", "bic"), ...)
+coef.ordinalNet <- function(object, matrix=FALSE, whichLambda=NULL, criteria=c("aic", "bic"), ...)
 {
     if (!is.null(whichLambda) && length(whichLambda)!=1)
         stop("whichLambda should be a single value, or NULL.")
@@ -116,7 +74,7 @@ coef.ordinalNetFit <- function(object, matrix=FALSE, whichLambda=NULL, criteria=
     if (is.null(whichLambda)) whichLambda <- which.min(object[[criteria]])
     betaHat <- object$coefs[whichLambda, ]
     if (!matrix) return(betaHat)
-    # Extract variables from ordinalNetFit object
+    # Extract variables from ordinalNet object
     nLev <- object$nLev
     nVar <- object$nVar
     parallelTerms <- object$args$parallelTerms
@@ -137,11 +95,11 @@ coef.ordinalNetFit <- function(object, matrix=FALSE, whichLambda=NULL, criteria=
     betaMat
 }
 
-#' Predict method for an "ordinalNetFit" object
+#' Predict method for an "ordinalNet" object
 #'
 #' Obtains predicted probabilities, predicted class, or linear predictors.
 #'
-#' @param object An "ordinalNetFit" S3 object.
+#' @param object An "ordinalNet" S3 object.
 #' @param newx Optional covariate matrix. If NULL, fitted values will be obtained
 #' for the training data, as long as the model was fit with the argument
 #' \code{keepTrainingData=TRUE}.
@@ -157,30 +115,8 @@ coef.ordinalNetFit <- function(object, matrix=FALSE, whichLambda=NULL, criteria=
 #'
 #' @return The object returned depends on \code{type}.
 #'
-#' @examples
-#' # Simulate x as independent standard normal
-#' # Simulate y|x from an parallel cumulative logit (proportional odds) model
-#' set.seed(1)
-#' n <- 50
-#' intercepts <- c(-1, 1)
-#' beta <- c(1, 1, 0, 0, 0)
-#' ncat <- length(intercepts) + 1  # number of response categories
-#' p <- length(beta)  # number of covariates
-#' x <- matrix(rnorm(n*p), ncol=p)  # n x p covariate matrix
-#' eta <- c(x %*% beta) + matrix(intercepts, nrow=n, ncol=ncat-1, byrow=TRUE)
-#' invlogit <- function(x) 1 / (1+exp(-x))
-#' cumprob <- t(apply(eta, 1, invlogit))
-#' prob <- cbind(cumprob, 1) - cbind(0, cumprob)
-#' yint <- apply(prob, 1, function(p) sample(1:ncat, size=1, prob=p))
-#' y <- as.factor(yint)
-#'
-#' # Fit parallel cumulative logit model
-#' fit <- ordinalNet(x, y)
-#' predict(fit)
-#' predict(fit, type="class")
-#'
 #' @export
-predict.ordinalNetFit <- function(object, newx=NULL, whichLambda=NULL, criteria=c("aic", "bic"),
+predict.ordinalNet <- function(object, newx=NULL, whichLambda=NULL, criteria=c("aic", "bic"),
                                   type=c("response", "class", "link"), ...)
 {
     criteria <- match.arg(criteria)
@@ -188,7 +124,7 @@ predict.ordinalNetFit <- function(object, newx=NULL, whichLambda=NULL, criteria=
     if (is.null(newx) && !object$args$keepTrainingData)
         stop(paste0("Model was fit with keepTrainingData=FALSE, so training data was not saved. ",
              "A newx argument is required."))
-    # Extract variables from ordinalNetFit object
+    # Extract variables from ordinalNet object
     nLev <- object$nLev
     xNames <-  object$xNames
     parallelTerms <- object$args$parallelTerms
@@ -198,7 +134,7 @@ predict.ordinalNetFit <- function(object, newx=NULL, whichLambda=NULL, criteria=
     reverse <- object$args$reverse
     linkfun <- if (is.null(object$args$customLink)) makeLinkfun(family, link) else object$args$customLink
     x <- if (is.null(newx)) object$args$x else newx
-    betaMat <- coef.ordinalNetFit(object, matrix=TRUE, whichLambda=whichLambda, criteria=criteria)
+    betaMat <- coef.ordinalNet(object, matrix=TRUE, whichLambda=whichLambda, criteria=criteria)
     # Compute prediction values
     etaMat <- cbind(1, x) %*% betaMat
     deltaNames <- getDeltaNames(family, reverse, nLev)
@@ -212,42 +148,3 @@ predict.ordinalNetFit <- function(object, newx=NULL, whichLambda=NULL, criteria=
     class <- c(apply(probMat, 1, which.max))
     class
 }
-
-# #' Print method for an "ordinalNetFit" object.
-# #' Provides a model fit summary as a data frame. For each \code{lambda} value in
-# #' the solution path, the following information is included: degrees of freedom
-# #' (number of nonzero parameters), log-likelihood, AIC, BIC, and percent deviance explained.
-# #'
-# #' @param x An "ordinalNetFit" S3 object.
-# #' @param ... Not used. Additional print arguments.
-# #'
-# #' @return Silently returns the model fit data frame.
-# #'
-# #' @examples
-# #' # Simulate x as independent standard normal
-# #' # Simulate y|x from a parallel cumulative logit (proportional odds) model
-# #' set.seed(1)
-# #' n <- 50
-# #' intercepts <- c(-1, 1)
-# #' beta <- c(1, 1, 0, 0, 0)
-# #' ncat <- length(intercepts) + 1  # number of response categories
-# #' p <- length(beta)  # number of covariates
-# #' x <- matrix(rnorm(n*p), ncol=p)  # n x p covariate matrix
-# #' eta <- c(x %*% beta) + matrix(intercepts, nrow=n, ncol=ncat-1, byrow=TRUE)
-# #' invlogit <- function(x) 1 / (1+exp(-x))
-# #' cumprob <- t(apply(eta, 1, invlogit))
-# #' prob <- cbind(cumprob, 1) - cbind(0, cumprob)
-# #' yint <- apply(prob, 1, function(p) sample(1:ncat, size=1, prob=p))
-# #' y <- as.factor(yint)
-# #'
-# #' # Fit parallel cumulative logit model
-# #' fit <- ordinalNet(x, y)
-# #' fit
-# #'
-# #' @export
-# print.ordinalNetFit <- function(x, ...)
-# {
-#     cat("Summary of fit:\n")
-#     print(with(x, data.frame(lambdaVals, nNonzero, loglik, devPct, aic, bic)))
-# }
-
