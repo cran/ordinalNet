@@ -1,7 +1,7 @@
 Package: ordinalNet
 Type: Package
 Title: Penalized Ordinal Regression
-Version: 2.1
+Version: 2.2
 Authors@R: c(
     person("Michael", "Wurm", email = "wurm@wisc.edu", role = c("aut", "cre")),
     person("Paul", "Rathouz", email = "rathouz@biostat.wisc.edu", role = "aut"),
@@ -30,10 +30,10 @@ Suggests: testthat (>= 1.0.2), MASS (>= 7.3-45), glmnet (>= 2.0-5),
         rms (>= 5.1-0)
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-08-19 03:59:43 UTC; mike
+Packaged: 2017-08-21 19:44:38 UTC; mike
 Author: Michael Wurm [aut, cre],
   Paul Rathouz [aut],
   Bret Hanlon [aut]
 Maintainer: Michael Wurm <wurm@wisc.edu>
 Repository: CRAN
-Date/Publication: 2017-08-19 04:09:27 UTC
+Date/Publication: 2017-08-22 17:28:58 UTC

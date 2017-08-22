@@ -86,7 +86,7 @@
 #'
 #' # Fit parallel cumulative logit model; select lambda by cross validation
 #' tunefit <- ordinalNetTune(x, y)
-#' tunefit
+#' summary(tunefit)
 #' plot(tunefit)
 #' bestLambdaIndex <- which.max(rowMeans(tunefit$loglik))
 #' coef(tunefit$fit, whichLambda=bestLambdaIndex, matrix=TRUE)
@@ -154,23 +154,42 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
     out
 }
 
+#' Summary method for an "ordinalNetTune" object.
+#'
+#' Provides a data frame which summarizes the cross validation results and may
+#' be useful for selecting an appropriate value for the tuning parameter lambda.
+#'
+#' @param object An "ordinalNetTune" S3 object.
+#' @param ... Not used. Additional summary arguments.
+#'
+#' @return A data frame containing a record for each lambda value in the solution
+#' path. Each record contains the following: lambda value, average log-likelihood,
+#' and average misclassification rate. Averages are taken across all cross validation
+#' folds.
+#'
+#' @export
+summary.ordinalNetTune <- function(object, ...)
+{
+    lambda <- object$lambdaVals
+    loglik_avg <- unname(rowMeans(object$loglik))
+    misclass_avg <- unname(rowMeans(object$misclass))
+    data.frame(lambda=lambda, loglik_avg=loglik_avg, misclass_avg=misclass_avg)
+}
+
 #' Print method for an "ordinalNetTune" object.
 #'
-#' Displays the average out-of-sample log-likelihood and misclassification rate
-#' for each lambda value. The average is taken over all cross validation folds.
+#' Prints the data frame returned by the \code{summary.ordinalNetTune()} method.
 #'
 #' @param x An "ordinalNetTune" S3 object.
-#' @param ... Not used. Additional summary arguments.
+#' @param ... Not used. Additional print arguments.
 #'
 #' @export
 print.ordinalNetTune <- function(x, ...)
 {
-    cat("Cross validation summary\n\n")
-    loglik_avg <- rowMeans(x$loglik)
-    misclass_avg <- rowMeans(x$misclass)
-    print(data.frame(lambda=x$lambdaVals, loglik_avg=loglik_avg, misclass_avg=misclass_avg))
+    cat("\nCross validation summary:\n\n")
+    print(summary.ordinalNetTune(x))
     cat("\n")
-    return(NULL)
+    invisible(x)
 }
 
 #' Plot method for "ordinalNetTune" object.

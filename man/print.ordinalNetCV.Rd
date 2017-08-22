@@ -9,9 +9,8 @@
 \arguments{
 \item{x}{An "ordinalNetCV" S3 object}
 
-\item{...}{Not used. Additional summary arguments.}
+\item{...}{Not used. Additional print arguments.}
 }
 \description{
-Displays the out-of-sample log-likelihood and misclassification rate for each
-cross validation fold.
+Prints the data frame returned by the \code{summary.ordinalNetCV()} method.
 }

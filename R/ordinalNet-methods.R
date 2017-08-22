@@ -34,21 +34,38 @@ getDeltaNames <- function(family, reverse, nLev)
     deltaNames
 }
 
-#' Print method for an "ordinalNet" object.
+#' Summary method for an "ordinalNet" object.
 #'
-#' Provides a model fit summary as a data frame. For each \code{lambda} value in
-#' the solution path, the following information is included: degrees of freedom
+#' Provides a data frame which summarizes the model fit at each lambda value in
+#' the solution path.model fit summary as a data frame.
+#'
+#' @param object An "ordinalNet" S3 object
+#' @param ... Not used. Additional summary arguments.
+#'
+#' @return A data frame containing a record for each lambda value in the solution
+#' path. Each record contains the following fields: lambda value, degrees of freedom
 #' (number of nonzero parameters), log-likelihood, AIC, BIC, and percent deviance explained.
 #'
+#' @export
+summary.ordinalNet <- function(object, ...)
+{
+    with(object, data.frame(lambdaVals, nNonzero, loglik, devPct, aic, bic))
+}
+
+#' Print method for an "ordinalNet" object.
+#'
+#' Prints the data frame returned by the \code{summary.ordinalNet()} method.
+#'
 #' @param x An "ordinalNet" S3 object
-#' @param ... Not used. Additional summary arguments.
+#' @param ... Not used. Additional plot arguments.
 #'
 #' @export
 print.ordinalNet <- function(x, ...)
 {
-    cat("Summary of fit\n\n")
-    print(with(x, data.frame(lambdaVals, nNonzero, loglik, devPct, aic, bic)))
-    return(NULL)
+    cat("\nSummary of fit:\n\n")
+    print(summary.ordinalNet(x))
+    cat("\n")
+    invisible(x)
 }
 
 #' Method to extract fitted coefficients from an "ordinalNet" object.

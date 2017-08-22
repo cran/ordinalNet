@@ -9,10 +9,8 @@
 \arguments{
 \item{x}{An "ordinalNet" S3 object}
 
-\item{...}{Not used. Additional summary arguments.}
+\item{...}{Not used. Additional plot arguments.}
 }
 \description{
-Provides a model fit summary as a data frame. For each \code{lambda} value in
-the solution path, the following information is included: degrees of freedom
-(number of nonzero parameters), log-likelihood, AIC, BIC, and percent deviance explained.
+Prints the data frame returned by the \code{summary.ordinalNet()} method.
 }

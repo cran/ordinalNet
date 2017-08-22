@@ -124,17 +124,19 @@
 #'
 #' \strong{\emph{Model families:}}
 #'
-#' Let \eqn{Y_i} denote a discrete random variable on \eqn{1, \ldots, K+1} with
-#' class probabilities \eqn{p_i}. Now dropping the subscript \eqn{i} on \eqn{Y_i}
-#' and \eqn{\delta_i}, the family definitions are as follows:
+#' Let \eqn{Y} denote the random response variable for a single observation,
+#' conditional on the covariates values of the observation. The random variable
+#' \eqn{Y} is discrete with support \{\eqn{1, \ldots, K+1}\}. The following model
+#' families are defined according to these mappings between the class
+#' probabilities and the values \eqn{\delta_1, \ldots, \delta_K}:
 #' \describe{
 #'   \item{Cumulative probability}{\eqn{\delta_j = P(Y \le j)}}
-#'   \item{Reverse cumulative probability}{\eqn{\delta_j = P(Y \ge j)}}
+#'   \item{Reverse cumulative probability}{\eqn{\delta_j = P(Y \ge j + 1)}}
 #'   \item{Stopping ratio}{\eqn{\delta_j = P(Y = j | Y \ge j)}}
-#'   \item{Reverse stopping ratio}{\eqn{\delta_j = P(Y=j | Y \le j)}}
+#'   \item{Reverse stopping ratio}{\eqn{\delta_j = P(Y=j + 1 | Y \le j + 1)}}
 #'   \item{Continuation ratio}{\eqn{\delta_j = P(Y > j | Y \ge j)}}
 #'   \item{Reverse continuation ratio}{\eqn{\delta_j = P(Y < j | Y \le j)}}
-#'   \item{Adjacent category}{\eqn{\delta_j = P(Y = j+1 | j \le Y \le j+1)}}
+#'   \item{Adjacent category}{\eqn{\delta_j = P(Y = j + 1 | j \le Y \le j+1)}}
 #'   \item{Reverse adjacent category}{\eqn{\delta_j = P(Y = j | j \le Y \le j+1)}}
 #' }
 #'
@@ -245,7 +247,7 @@
 #' # Fit parallel cumulative logit model
 #' fit1 <- ordinalNet(x, y, family="cumulative", link="logit",
 #'                    parallelTerms=TRUE, nonparallelTerms=FALSE)
-#' fit1
+#' summary(fit1)
 #' coef(fit1)
 #' coef(fit1, matrix=TRUE)
 #' predict(fit1, type="response")

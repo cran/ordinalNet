@@ -187,22 +187,40 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
     out
 }
 
+#' Summary method for an "ordinalNetCV" object.
+#'
+#' Provides a data frame which summarizes the cross validation results, which
+#' can be used as an estimate of the out-of-sample performance of a model tuned
+#' by a particular method.
+#'
+#' @param object An "ordinalNetCV" S3 object
+#' @param ... Not used. Additional summary arguments.
+#'
+#' @return A data frame containing a record for each cross validation fold.
+#' Each record contains the following: lambda value, log-likelihood,
+#' misclassification rate.
+#'
+#' @export
+summary.ordinalNetCV <- function(object, ...)
+{
+    lambda <- object$lambdaVals[object$bestLambdaIndex]
+    loglik <- object$loglik
+    misclass <- object$misclass
+    data.frame(lambda=lambda, loglik=loglik, misclass=misclass)
+}
+
 #' Print method for an "ordinalNetCV" object.
 #'
-#' Displays the out-of-sample log-likelihood and misclassification rate for each
-#' cross validation fold.
+#' Prints the data frame returned by the \code{summary.ordinalNetCV()} method.
 #'
 #' @param x An "ordinalNetCV" S3 object
-#' @param ... Not used. Additional summary arguments.
+#' @param ... Not used. Additional print arguments.
 #'
 #' @export
 print.ordinalNetCV <- function(x, ...)
 {
-    cat("Cross validation summary\n\n")
-    lambda <- x$lambdaVals[x$bestLambdaIndex]
-    print(data.frame(lambda=lambda, loglik=x$loglik, misclass=x$misclass))
+    cat("\nCross validation summary:\n\n")
+    print(summary.ordinalNetCV(x))
     cat("\n")
-    cat("        Average out-of-sample log-likelihood: ", mean(x$loglik), "\n")
-    cat("Average out-of-sample misclassification rate: ", mean(x$misclass), "\n\n")
-    return(NULL)
+    invisible(x)
 }

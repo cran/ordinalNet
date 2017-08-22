@@ -102,7 +102,7 @@ y <- as.factor(yint)
 
 # Fit parallel cumulative logit model; select lambda by cross validation
 tunefit <- ordinalNetTune(x, y)
-tunefit
+summary(tunefit)
 plot(tunefit)
 bestLambdaIndex <- which.max(rowMeans(tunefit$loglik))
 coef(tunefit$fit, whichLambda=bestLambdaIndex, matrix=TRUE)

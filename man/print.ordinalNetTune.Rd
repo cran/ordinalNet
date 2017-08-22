@@ -9,9 +9,8 @@
 \arguments{
 \item{x}{An "ordinalNetTune" S3 object.}
 
-\item{...}{Not used. Additional summary arguments.}
+\item{...}{Not used. Additional print arguments.}
 }
 \description{
-Displays the average out-of-sample log-likelihood and misclassification rate
-for each lambda value. The average is taken over all cross validation folds.
+Prints the data frame returned by the \code{summary.ordinalNetTune()} method.
 }
