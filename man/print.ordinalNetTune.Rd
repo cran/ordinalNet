@@ -14,3 +14,10 @@
 \description{
 Prints the data frame returned by the \code{summary.ordinalNetTune()} method.
 }
+\examples{
+# See ordinalNetTune() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNetTune}}
+}

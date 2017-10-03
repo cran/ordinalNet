@@ -200,6 +200,12 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
 #' Each record contains the following: lambda value, log-likelihood,
 #' misclassification rate.
 #'
+#' @seealso
+#' \code{\link{ordinalNetCV}}
+#'
+#' @examples
+#' # See ordinalNetCV() documentation for examples.
+#'
 #' @export
 summary.ordinalNetCV <- function(object, ...)
 {
@@ -215,6 +221,12 @@ summary.ordinalNetCV <- function(object, ...)
 #'
 #' @param x An "ordinalNetCV" S3 object
 #' @param ... Not used. Additional print arguments.
+#'
+#' @seealso
+#' \code{\link{ordinalNetCV}}
+#'
+#' @examples
+#' # See ordinalNetCV() documentation for examples.
 #'
 #' @export
 print.ordinalNetCV <- function(x, ...)

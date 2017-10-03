@@ -21,3 +21,10 @@ Provides a data frame which summarizes the cross validation results, which
 can be used as an estimate of the out-of-sample performance of a model tuned
 by a particular method.
 }
+\examples{
+# See ordinalNetCV() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNetCV}}
+}

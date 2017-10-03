@@ -1,7 +1,7 @@
 MASSInst <- require(MASS)
 glmnetInst <- require(glmnet)
 penalizedInst <- require(penalized)
-glmnetcrInst <- require(glmnetcr)
+glmnetcrInst <- require(glmnetcr) && packageVersion("glmnetcr") >= "1.0.3"
 VGAMInst <- require(VGAM)
 rmsInst <- require(rms)
 
@@ -181,16 +181,16 @@ test_that("Binary logistic regression with positive constraints matches penalize
 })
 
 test_that("Elastic net sratio matches glmnetcr::glmnet.cr", {
-    if (!glmnetcrInst) skip("glmnetcr not installed")
+    if (!glmnetcrInst) skip("glmnetcr >= 1.0.3 not installed")
     # Unpenalized sratio
     o <- ordinalNet(x, y, lambdaVals=0, family="sratio", link="logit")
-    g <- glmnet.cr(x, y, lambda=0, method="forward")
+    g <- glmnetcr(x, y, lambda=0, method="forward")
     coefg <- with(coef(g, s=1), (c(tail(beta, k) + a0, head(beta, -k))))
     expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=1e-2)
     rm(o, g, coefg)
     # Unpenalized sratio, reverse
     o <- ordinalNet(x, y, lambdaVals=0, family="sratio", link="logit", reverse=TRUE)
-    g <- glmnet.cr(x, y, lambda=0, method="backward")
+    g <- glmnetcr(x, y, lambda=0, method="backward")
     coefg <- with(coef(g, s=1), (c(rev(tail(beta, k)) + a0, head(beta, -k))))
     expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.02)
     rm(o, g, coefg)
@@ -199,7 +199,7 @@ test_that("Elastic net sratio matches glmnetcr::glmnet.cr", {
     # Not sure why glmnet.cr uses approx. .5*lambda
     # Standardizing covariates does not change this, and it's the same for alpha=0 and alpha=1
     o <- ordinalNet(x, y, alpha=.5, lambdaVals=.1, family="sratio", link="logit")
-    g <- glmnet.cr(x, y, alpha=.5, lambda=.1/2, method="forward")
+    g <- glmnetcr(x, y, alpha=.5, lambda=.1/2, method="forward")
     coefg <- with(coef(g, s=1), (c(tail(beta, k) + a0, head(beta, -k))))
     expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.1)
     rm(o, g, coefg)
@@ -208,7 +208,7 @@ test_that("Elastic net sratio matches glmnetcr::glmnet.cr", {
     # Not sure why glmnet.cr uses approx. .5*lambda
     # Standardizing covariates does not change this, and it's the same for alpha=0 and alpha=1
     o <- ordinalNet(x, y, alpha=.5, lambdaVals=.1, family="sratio", link="logit", reverse=TRUE)
-    g <- glmnet.cr(x, y, alpha=.5, lambda=.1/2, method="backward")
+    g <- glmnetcr(x, y, alpha=.5, lambda=.1/2, method="backward")
     coefg <- with(coef(g, s=1), (c(rev(tail(beta, k)) + a0, head(beta, -k))))
     expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.1)
     rm(o, g, coefg)

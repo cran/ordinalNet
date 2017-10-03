@@ -14,3 +14,10 @@
 \description{
 Prints the data frame returned by the \code{summary.ordinalNet()} method.
 }
+\examples{
+# See ordinalNet() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNet}}
+}

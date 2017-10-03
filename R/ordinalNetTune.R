@@ -167,6 +167,12 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
 #' and average misclassification rate. Averages are taken across all cross validation
 #' folds.
 #'
+#' @seealso
+#' \code{\link{ordinalNetTune}}
+#'
+#' @examples
+#' # See ordinalNetTune() documentation for examples.
+#'
 #' @export
 summary.ordinalNetTune <- function(object, ...)
 {
@@ -182,6 +188,12 @@ summary.ordinalNetTune <- function(object, ...)
 #'
 #' @param x An "ordinalNetTune" S3 object.
 #' @param ... Not used. Additional print arguments.
+#'
+#' @seealso
+#' \code{\link{ordinalNetTune}}
+#'
+#' @examples
+#' # See ordinalNetTune() documentation for examples.
 #'
 #' @export
 print.ordinalNetTune <- function(x, ...)
@@ -201,6 +213,12 @@ print.ordinalNetTune <- function(x, ...)
 #' @param x An "ordinalNetTune" S3 object.
 #' @param type Which performance measure to plot. Either "loglik" or "misclass".
 #' @param ... Additional plot arguments.
+#'
+#' @seealso
+#' \code{\link{ordinalNetTune}}
+#'
+#' @examples
+#' # See ordinalNetTune() documentation for examples.
 #'
 #'@export
 plot.ordinalNetTune <- function(x, type=c("loglik", "misclass"), ...)

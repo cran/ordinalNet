@@ -14,3 +14,10 @@
 \description{
 Prints the data frame returned by the \code{summary.ordinalNetCV()} method.
 }
+\examples{
+# See ordinalNetCV() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNetCV}}
+}

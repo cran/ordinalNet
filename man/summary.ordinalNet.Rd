@@ -20,3 +20,10 @@ path. Each record contains the following fields: lambda value, degrees of freedo
 Provides a data frame which summarizes the model fit at each lambda value in
 the solution path.model fit summary as a data frame.
 }
+\examples{
+# See ordinalNet() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNet}}
+}

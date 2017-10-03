@@ -18,3 +18,10 @@ Plots the average out-of-sample log-likelihood or misclassification rate for
 each lambda value in the solution path. The averae is taken over all cross
 validation folds.
 }
+\examples{
+# See ordinalNetTune() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNetTune}}
+}

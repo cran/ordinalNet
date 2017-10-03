@@ -28,3 +28,10 @@ The object returned depends on \code{matrix}.
 \description{
 Method to extract fitted coefficients from an "ordinalNet" object.
 }
+\examples{
+# See ordinalNet() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNet}}
+}

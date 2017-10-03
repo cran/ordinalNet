@@ -21,3 +21,10 @@ folds.
 Provides a data frame which summarizes the cross validation results and may
 be useful for selecting an appropriate value for the tuning parameter lambda.
 }
+\examples{
+# See ordinalNetTune() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNetTune}}
+}

@@ -33,3 +33,10 @@ The object returned depends on \code{type}.
 \description{
 Obtains predicted probabilities, predicted class, or linear predictors.
 }
+\examples{
+# See ordinalNet() documentation for examples.
+
+}
+\seealso{
+\code{\link{ordinalNet}}
+}

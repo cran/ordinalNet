@@ -46,6 +46,12 @@ getDeltaNames <- function(family, reverse, nLev)
 #' path. Each record contains the following fields: lambda value, degrees of freedom
 #' (number of nonzero parameters), log-likelihood, AIC, BIC, and percent deviance explained.
 #'
+#' @seealso
+#' \code{\link{ordinalNet}}
+#'
+#' @examples
+#' # See ordinalNet() documentation for examples.
+#'
 #' @export
 summary.ordinalNet <- function(object, ...)
 {
@@ -58,6 +64,12 @@ summary.ordinalNet <- function(object, ...)
 #'
 #' @param x An "ordinalNet" S3 object
 #' @param ... Not used. Additional plot arguments.
+#'
+#' @seealso
+#' \code{\link{ordinalNet}}
+#'
+#' @examples
+#' # See ordinalNet() documentation for examples.
 #'
 #' @export
 print.ordinalNet <- function(x, ...)
@@ -81,6 +93,12 @@ print.ordinalNet <- function(x, ...)
 #' @param ... Not used. Additional coef arguments.
 #'
 #' @return The object returned depends on \code{matrix}.
+#'
+#' @seealso
+#' \code{\link{ordinalNet}}
+#'
+#' @examples
+#' # See ordinalNet() documentation for examples.
 #'
 #' @export
 coef.ordinalNet <- function(object, matrix=FALSE, whichLambda=NULL, criteria=c("aic", "bic"), ...)
@@ -131,6 +149,12 @@ coef.ordinalNet <- function(object, matrix=FALSE, whichLambda=NULL, criteria=c("
 #' @param ... Not used. Additional predict arguments.
 #'
 #' @return The object returned depends on \code{type}.
+#'
+#' @seealso
+#' \code{\link{ordinalNet}}
+#'
+#' @examples
+#' # See ordinalNet() documentation for examples.
 #'
 #' @export
 predict.ordinalNet <- function(object, newx=NULL, whichLambda=NULL, criteria=c("aic", "bic"),
