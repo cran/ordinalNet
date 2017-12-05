@@ -1,9 +1,9 @@
 Package: ordinalNet
 Type: Package
 Title: Penalized Ordinal Regression
-Version: 2.3
+Version: 2.4
 Authors@R: c(
-    person("Michael", "Wurm", email = "wurm@wisc.edu", role = c("aut", "cre")),
+    person("Michael", "Wurm", email = "wurm@uwalumni.com", role = c("aut", "cre")),
     person("Paul", "Rathouz", email = "rathouz@biostat.wisc.edu", role = "aut"),
     person("Bret", "Hanlon", email = "hanlon@stat.wisc.edu", role = "aut"))	
 Description: Fits ordinal regression models with elastic net penalty.
@@ -30,10 +30,10 @@ Suggests: testthat (>= 1.0.2), MASS (>= 7.3-45), glmnet (>= 2.0-5),
         rms (>= 5.1-0)
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-10-03 02:29:38 UTC; mike
+Packaged: 2017-12-05 01:46:52 UTC; mike
 Author: Michael Wurm [aut, cre],
   Paul Rathouz [aut],
   Bret Hanlon [aut]
-Maintainer: Michael Wurm <wurm@wisc.edu>
+Maintainer: Michael Wurm <wurm@uwalumni.com>
 Repository: CRAN
-Date/Publication: 2017-10-03 08:49:32 UTC
+Date/Publication: 2017-12-05 10:55:42 UTC
