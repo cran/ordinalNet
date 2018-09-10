@@ -28,8 +28,9 @@
 #' @param standardize If \code{standardize=TRUE}, the predictor variables are
 #' scaled to have unit variance. Coefficient estimates are returned on the
 #' original scale.
-#' @param penaltyFactors Nonnegative vector of penalty factors for each variable.
-#' This vector is multiplied by lambda to get the penalty for each variable.
+#' @param penaltyFactors Optional nonnegative vector of penalty factors with
+#' length equal to the number of columns in \code{x}. If this argument is used,
+#' then the penalty for each variable is scaled by its corresponding factor.
 #' If \code{NULL}, the penalty factor is one for each coefficient.
 #' @param positiveID Logical vector indicating whether each coefficient should
 #' be constrained to be non-negative. If \code{NULL}, the default value is \code{FALSE}
@@ -54,9 +55,10 @@
 #' @param nonparallelTerms Logical. if \code{TRUE}, then nonparallel coefficient terms
 #' will be included in the model. \code{parallelTerms} and \code{nonparallelTerms}
 #' cannot both be \code{FALSE}.
-#' @param parallelPenaltyFactor Numeric value greater than or equal to zero. Lambda
-#' is multiplied by this factor (as well as variable-specific \code{penaltyFactors})
-#' to obtain the penalties for parallel terms. Only used if \code{parallelTerms=TRUE}.
+#' @param parallelPenaltyFactor Nonnegative numeric value equal to one by
+#' default. The penalty on all parallel terms is scaled by this factor (as well
+#' as variable-specific \code{penaltyFactors}). Only used if
+#' \code{parallelTerms=TRUE}.
 #' @param lambdaVals An optional user-specified lambda sequence (vector). If \code{NULL},
 #' a sequence will be generated based on \code{nLambda} and \code{lambdaMinRatio}.
 #' In this case, the maximum lambda is the smallest value that sets all penalized
@@ -72,10 +74,15 @@
 #' may have infinite coefficient solutions, in which case the fitting algorithm
 #' will still terminate when the relative change in log-likelihood becomes small.
 #' Only used if \code{lambdaVals=NULL}.
-#' @param alphaMin Value greater than zero, but much less than one.
-#' If \code{alpha < alphaMin}, then \code{alphaMin} is used to calculate the
-#' maximum lambda value. When \code{alpha=0}, the maximum lambda value would be
-#' infinite otherwise.
+#' @param alphaMin \code{max(alpha, alphaMin)} is used to calculate the starting
+#' lambda value when \code{lambdaVals=NULL}. In this case, the default lambda
+#' sequence begins with the smallest lambda value such that all penalized
+#' coefficients are set to zero (i.e. the value where the first penalized
+#' coefficient enters the solution path). The purpose of this argument is to
+#' help select a starting value for the lambda sequence when \code{alpha = 0},
+#' because otherwise it would be infinite. Note that \code{alphaMin} is only
+#' used to determine the default lamba sequence and that the model is always fit
+#' using \code{alpha} to calculate the penalty.
 #' @param pMin Value greater than zero, but much less than one. During the optimization
 #' routine, the Fisher information is calculated using fitted probabilities. For
 #' this calculation, fitted probabilities are capped below by this value to prevent
@@ -276,8 +283,8 @@ ordinalNet <- function(x, y, alpha=1, standardize=TRUE, penaltyFactors=NULL, pos
                        family=c("cumulative", "sratio", "cratio", "acat"), reverse=FALSE,
                        link=c("logit", "probit", "cloglog", "cauchit"), customLink=NULL,
                        parallelTerms=TRUE, nonparallelTerms=FALSE, parallelPenaltyFactor=1,
-                       lambdaVals=NULL, nLambda=20, lambdaMinRatio=1e-2, includeLambda0=FALSE, alphaMin=1e-2,
-                       pMin=1e-8, stopThresh=1e-4, threshOut=1e-8, threshIn=1e-8, maxiterOut=100, maxiterIn=1000,
+                       lambdaVals=NULL, nLambda=20, lambdaMinRatio=0.01, includeLambda0=FALSE, alphaMin=0.01,
+                       pMin=1e-8, stopThresh=1e-8, threshOut=1e-8, threshIn=1e-8, maxiterOut=100, maxiterIn=100,
                        printIter=FALSE, printBeta=FALSE, warn=TRUE, keepTrainingData=TRUE)
 {
     family <- match.arg(family)
@@ -299,7 +306,7 @@ ordinalNet <- function(x, y, alpha=1, standardize=TRUE, penaltyFactors=NULL, pos
     nLev <- ncol(yMat)
     if (reverse) yMat <- yMat[, nLev:1]
 
-    # Other rgument checks
+    # Other argument checks
     if (nrow(x) != nrow(yMat))
         stop("x and y dimensions do not match.")
     if (alpha<0 || alpha>1)
@@ -322,8 +329,12 @@ ordinalNet <- function(x, y, alpha=1, standardize=TRUE, penaltyFactors=NULL, pos
         stop("lambdaMinRatio should be strictly greater than zero.")
     if (alpha<alphaMin && alphaMin<=0)
         stop("alphaMin should be strictly greater than zero.")
+    if (length(parallelPenaltyFactor) > 1)
+        stop("parallelPenaltyFactor should be a single value.")
     if (parallelTerms && parallelPenaltyFactor<0)
         stop("parallelPenaltyFactor should be >= 0.")
+    if (!parallelTerms && parallelPenaltyFactor!=1)
+        warning("parallelPenaltyFactor is not used when parallelTerms=FALSE.")
     if (!parallelTerms && !nonparallelTerms)
         stop("parallelTerms and nonparallelTerms cannot both be FALSE.")
     if (warn && family=="cumulative" && nonparallelTerms) {
@@ -340,6 +351,8 @@ ordinalNet <- function(x, y, alpha=1, standardize=TRUE, penaltyFactors=NULL, pos
                 The customLink argument is not checked, so user should be cautious
                 using it.")
     }
+    if ((parallelPenaltyFactor != 1) && !parallelTerms)
+        warning("parallelPenaltyFactor is not used when parallelTerms = FALSE.")
 
     # Create linkfun
     linkfun <- makeLinkfun(family, link)

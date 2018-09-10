@@ -4,19 +4,21 @@
 \alias{plot.ordinalNetTune}
 \title{Plot method for "ordinalNetTune" object.}
 \usage{
-\method{plot}{ordinalNetTune}(x, type = c("loglik", "misclass"), ...)
+\method{plot}{ordinalNetTune}(x, type = c("loglik", "misclass", "brier",
+  "devPct"), ...)
 }
 \arguments{
 \item{x}{An "ordinalNetTune" S3 object.}
 
-\item{type}{Which performance measure to plot. Either "loglik" or "misclass".}
+\item{type}{Which performance measure to plot. Either "loglik", "misclass",
+"brier", or "devPct".}
 
 \item{...}{Additional plot arguments.}
 }
 \description{
-Plots the average out-of-sample log-likelihood or misclassification rate for
-each lambda value in the solution path. The averae is taken over all cross
-validation folds.
+Plots the average out-of-sample log-likelihood, misclassification rate,
+Brier score, or percentage of deviance explained for each lambda value in the
+solution path. The averae is taken over all cross validation folds.
 }
 \examples{
 # See ordinalNetTune() documentation for examples.

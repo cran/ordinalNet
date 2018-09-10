@@ -14,8 +14,8 @@
 \value{
 A data frame containing a record for each lambda value in the solution
 path. Each record contains the following: lambda value, average log-likelihood,
-and average misclassification rate. Averages are taken across all cross validation
-folds.
+average misclassification rate, average Brier score, and average percentage
+of deviance explained. Averages are taken across all cross validation folds.
 }
 \description{
 Provides a data frame which summarizes the cross validation results and may

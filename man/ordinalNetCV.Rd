@@ -6,8 +6,8 @@
 misclassification rates. Lambda is tuned within each cross validation fold.}
 \usage{
 ordinalNetCV(x, y, lambdaVals = NULL, folds = NULL, nFolds = 5,
-  nFoldsCV = 5, tuneMethod = c("cvLoglik", "cvMisclass", "aic", "bic"),
-  printProgress = TRUE, warn = TRUE, ...)
+  nFoldsCV = 5, tuneMethod = c("cvLoglik", "cvMisclass", "cvBrier",
+  "cvDevPct", "aic", "bic"), printProgress = TRUE, warn = TRUE, ...)
 }
 \arguments{
 \item{x}{Covariate matrix.}
@@ -36,14 +36,14 @@ for reproducibility.}
 
 \item{nFoldsCV}{Number of cross validation folds used to tune lambda for each
 training set (i.e. within each training fold). Only used of \code{tuneMethod} is
-"cvLoglik" or "cvMisclass".}
+"cvLoglik", "cvMisclass", "cvBrier", or "cvDevPct.}
 
 \item{tuneMethod}{Method used to tune lambda for each training set (ie. within
-each training fold). The "cvLoglik" and "cvMisclass" methods use K-fold cross validation
-with \code{nFoldsCV} folds. "cvLoglik chooses lambda with the best average
-out-of-sample log-likelihood. "cvMisclass" chooses lambda with the best
-average misclassification rate. The "aic" and "bic" methods are less computationally
-intensive because they do not require cross validation to select lambda.
+each training fold). The "cvLoglik", "cvMisclass", "cvBrier", and "cvDevPct"
+methods use cross validation with \code{nFoldsCV} folds and select the
+lambda value with the best average out-of-sample performance. The "aic" and "bic"
+methods are less computationally intensive because they do not require the
+model to be fit multiple times.
 Note that for the methods that require cross validation, the fold splits are
 determined randomly and cannot be specified by the user. The \code{set.seed()}
 function should be called prior to \code{ordinalNetCV} for reproducibility.}
@@ -65,10 +65,14 @@ passed to \code{ordinalNet}.}
 \value{
 An S3 object of class "ordinalNetCV", which contains the following:
 \describe{
-  \item{loglik}{Vector of out of sample log-likelihood values. Each value
-  corresponds to a different fold.}
-  \item{misclass}{Vector of out of sample misclassificaton rates. Each value
-  corresponds to a different fold.}
+  \item{loglik}{Vector of out-of-sample log-likelihood values.
+  Each value corresponds to a different fold.}
+  \item{misclass}{Vector of out-of-sample misclassificaton rates.
+  Each value corresponds to a different fold.}
+  \item{brier}{Vector of out-of-sample Brier scores.
+  Each value corresponds to a different fold.}
+  \item{devPct}{Vector of out-of-sample percentages of deviance explained.
+  Each value corresponds to a different fold.}
   \item{bestLambdaIndex}{The index of the value within the lambda sequence
   selected for each fold by the tuning method.}
   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
@@ -80,12 +84,13 @@ An S3 object of class "ordinalNetCV", which contains the following:
 \description{
 The data is divided into K folds. \code{ordinalNet} is fit \eqn{K} times, each time
 leaving out one fold as a test set. For each of the \eqn{K} model fits, lambda
-can be tuned by K-fold cross validation (within each fold), or by AIC or BIC
-which do not require cross validation. If cross validation is used, the user
-has the option to select the lambda value with either the best average out-of-sample
-log-likelihood or the best misclassification rate. Once the model is tuned,
-the out of sample log-likelihood and misclassification rate are obtained from
-the held out test set.
+can be tuned by AIC or BIC, or cross validation. If cross validation is used,
+the user can choose whether to user the best average out-of-sample log-likelihood,
+misclassification rate, Brier score, or percentage of deviance explained.
+The user can also choose the number of cross validation folds to use for tuning.
+Once the model is tuned, the out of sample log-likelihood,
+misclassification rate, Brier score, and percentage of deviance explained
+are calculated on the held out test set.
 }
 \details{
 \itemize{

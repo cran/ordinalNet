@@ -21,6 +21,25 @@ getLoglik <- function(pMat, yMat)
     llik
 }
 
+getMisclass <- function(pMat, yMat)
+{
+    pkplusone <- 1 - rowSums(pMat)
+    pMatFull <- cbind(pMat, pkplusone)
+    predClass <- apply(pMatFull, 1, which.max)
+    nMisclass <- sapply(1:nrow(yMat), function(i) sum(yMat[i, -predClass[i]]))
+    misclass <- sum(nMisclass) / sum(yMat)
+    misclass
+}
+
+getBrier <- function(pMat, yMat)
+{
+    pkplusone <- 1 - rowSums(pMat)
+    pMatFull <- cbind(pMat, pkplusone)
+    n <- rowSums(yMat)
+    brier <- sum(yMat * (1 - pMatFull)^2 + (n - yMat) * pMatFull^2) / sum(n)
+    brier
+}
+
 # Returns approximate log-likelihood (as a function of beta, up to a constant)
 getLoglikApprox <- function(betaHatActive, scoreActive, infoActive)
 {

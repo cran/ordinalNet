@@ -34,7 +34,6 @@ cdIn <- function(wtsum, betaHat, score, info, alpha, lambdaMod, positiveID, thre
         while (!conv && iterIn<maxiterIn)
         {
             iterIn <- iterIn + 1
-
             for (i in seq_along(activeSet))
             {
                 numTerm <- softThreshTermsActive[i] - sum(infoActive[i, -i, drop=FALSE] * betaHatActive[-i])
@@ -63,6 +62,7 @@ cdIn <- function(wtsum, betaHat, score, info, alpha, lambdaMod, positiveID, thre
         kktAll <- all(kkt)
         if (!kktAll)
         {
+            iterIn <- iterIn - 1  # repeat the iteration if kkt conditions are not satisfied
             activeSet <- union(activeSet, which(!kkt))
             betaHatActive <- betaHat[activeSet]
             scoreActive <- score[activeSet]

@@ -3,9 +3,10 @@
 #'
 #' The data is divided into K folds. \code{ordinalNet} is fit \eqn{K} times (\code{K=nFolds}),
 #' each time leaving out one fold as a test set. The same sequence of lambda values is used
-#' each time. The out-of-sample log-likelihood and misclassification rate
-#' are obtained for each lambda value from the held out test set.
-#' It is up to the user to determine how to tune the model using this information.
+#' each time. The out-of-sample log-likelihood, misclassification rate, Brier score,
+#' and percentage of deviance explained are obtained for each lambda value from
+#' the held out test set. It is up to the user to determine how to tune the model
+#' using this information.
 #'
 #' @param x Covariate matrix.
 #' @param y Response variable. Can be a factor, ordered factor, or a matrix
@@ -56,10 +57,14 @@
 #' @return
 #' An S3 object of class "ordinalNetTune", which contains the following:
 #' \describe{
-#'   \item{loglik}{Matrix of out of sample log-likelihood values. Each row corresponds
-#'   to a different lambda value, and each column corresponds to a different fold.}
-#'   \item{misclass}{Matrix of out of sample misclassificaton rates. Each row corresponds
-#'   to a different lambda value, and each column corresponds to a different fold.}
+#'   \item{loglik}{Matrix of out-of-sample log-likelihood values.
+#'   Each row corresponds to a lambda value, and each column corresponds to a fold.}
+#'   \item{misclass}{Matrix of out-of-sample misclassificaton rates.
+#'   Each row corresponds to a lambda value, and each column corresponds to a fold.}
+#'   \item{brier}{Matrix of out-of-sample Brier scores. Each row corresponds
+#'   to a lambda value, and each column corresponds to a fold.}
+#'   \item{devPct}{Matrix of out-of-sample percentages of deviance explained.
+#'   Each row corresponds to a lambda value, and each column corresponds to a fold.}
 #'   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
 #'   \item{folds}{A list containing the index numbers of each fold.}
 #'   \item{fit}{An object of class "ordinalNet", resulting from fitting
@@ -123,9 +128,11 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
     }
 
     nLambda <- length(lambdaVals)
-    loglik <- misclass <- matrix(nrow=nLambda, ncol=nFolds)
-    colnames(loglik) <- colnames(misclass) <- paste0("fold", 1:nFolds)
-    rownames(loglik) <- rownames(misclass) <- paste0("lambda", 1:nLambda)
+    loglik <- misclass <- brier <- devPct <- matrix(nrow=nLambda, ncol=nFolds)
+    colnames(loglik) <- colnames(misclass) <- colnames(brier) <- colnames(devPct) <-
+        paste0("fold", 1:nFolds)
+    rownames(loglik) <- rownames(misclass) <- rownames(brier) <- rownames(devPct) <-
+        paste0("lambda", 1:nLambda)
     for (i in 1:nFolds)
     {
         testFold <- folds[[i]]
@@ -135,21 +142,29 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
         yMatTest <- yMat[testFold, , drop=FALSE]
         if (printProgress) cat("Fitting ordinalNet on fold", i, "of", nFolds, '\n')
         fitTrain <- ordinalNet(xTrain, yTrain, lambdaVals=lambdaVals, warn=FALSE, ...)
+        nLambdaTrain <- length(fitTrain$lambdaVals)
 
         for (j in 1:nLambda)
         {
-            pHat <- predict.ordinalNet(fitTrain, newx=xTest, type="response", whichLambda=j)
-            pHat1 <- pHat[, -ncol(pHat), drop=FALSE]
-            loglik[j, i] <- getLoglik(pHat1, yMatTest)
-            predClass <- apply(pHat, 1, which.max)
-            nMisclass <- sapply(1:nrow(yMatTest), function(i) sum(yMatTest[i, -predClass[i]]))
-            misclass[j, i] <- sum(nMisclass) / sum(yMatTest)
+            if (j > nLambdaTrain) {
+                loglik[j, i] <- NA
+                misclass[j, i] <- NA
+            } else {
+                pHatFull <- predict.ordinalNet(fitTrain, newx=xTest, type="response", whichLambda=j)
+                pHat <- pHatFull[, -ncol(pHatFull), drop=FALSE]
+                loglik[j, i] <- getLoglik(pHat, yMatTest)
+                misclass[j, i] <- getMisclass(pHat, yMatTest)
+                brier[j, i] <- getBrier(pHat, yMatTest)
+                loglikNull <- getLoglikNull(yMatTest)
+                devPct[j, i] <- 1 - loglik[j, i] / loglikNull
+            }
         }
     }
 
     if (printProgress) cat("Done\n")
 
-    out <- list(loglik=loglik, misclass=misclass, lambdaVals=lambdaVals, folds=folds, fit=fit)
+    out <- list(loglik=loglik, misclass=misclass, brier=brier, devPct=devPct,
+                lambdaVals=lambdaVals, folds=folds, fit=fit)
     class(out) <- "ordinalNetTune"
     out
 }
@@ -164,8 +179,8 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
 #'
 #' @return A data frame containing a record for each lambda value in the solution
 #' path. Each record contains the following: lambda value, average log-likelihood,
-#' and average misclassification rate. Averages are taken across all cross validation
-#' folds.
+#' average misclassification rate, average Brier score, and average percentage
+#' of deviance explained. Averages are taken across all cross validation folds.
 #'
 #' @seealso
 #' \code{\link{ordinalNetTune}}
@@ -179,7 +194,10 @@ summary.ordinalNetTune <- function(object, ...)
     lambda <- object$lambdaVals
     loglik_avg <- unname(rowMeans(object$loglik))
     misclass_avg <- unname(rowMeans(object$misclass))
-    data.frame(lambda=lambda, loglik_avg=loglik_avg, misclass_avg=misclass_avg)
+    brier_avg <- unname(rowMeans(object$brier))
+    devPct_avg <- unname(rowMeans(object$devPct))
+    data.frame(lambda=lambda, loglik_avg=loglik_avg, misclass_avg=misclass_avg,
+               brier_avg=brier_avg, devPct_avg=devPct_avg)
 }
 
 #' Print method for an "ordinalNetTune" object.
@@ -206,12 +224,13 @@ print.ordinalNetTune <- function(x, ...)
 
 #' Plot method for "ordinalNetTune" object.
 #'
-#' Plots the average out-of-sample log-likelihood or misclassification rate for
-#' each lambda value in the solution path. The averae is taken over all cross
-#' validation folds.
+#' Plots the average out-of-sample log-likelihood, misclassification rate,
+#' Brier score, or percentage of deviance explained for each lambda value in the
+#' solution path. The averae is taken over all cross validation folds.
 #'
 #' @param x An "ordinalNetTune" S3 object.
-#' @param type Which performance measure to plot. Either "loglik" or "misclass".
+#' @param type Which performance measure to plot. Either "loglik", "misclass",
+#' "brier", or "devPct".
 #' @param ... Additional plot arguments.
 #'
 #' @seealso
@@ -221,7 +240,7 @@ print.ordinalNetTune <- function(x, ...)
 #' # See ordinalNetTune() documentation for examples.
 #'
 #'@export
-plot.ordinalNetTune <- function(x, type=c("loglik", "misclass"), ...)
+plot.ordinalNetTune <- function(x, type=c("loglik", "misclass", "brier", "devPct"), ...)
 {
     type <- match.arg(type)
     y <- rowMeans(x[[type]])
@@ -230,5 +249,9 @@ plot.ordinalNetTune <- function(x, type=c("loglik", "misclass"), ...)
         ylab <- "avg misclass rate"
     if (type == "loglik")
         ylab <- "avg loglik"
+    if (type == "brier")
+        ylab <- "avg brier score"
+    if (type == "devPct")
+        ylab <- "avg pct deviance explained"
     graphics::plot(y ~ loglambda, ylab=ylab, xlab="log(lambda)", ...)
 }

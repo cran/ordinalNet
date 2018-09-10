@@ -16,7 +16,7 @@ mirlsNet <- function(xList, yMat, alpha, penaltyFactors, positiveID, linkfun, be
     {
         lambdaMod <- ifelse(penaltyFactors==0, 0, Inf)  # to find solution with only unpenalized terms
         fits[[1]] <- cdOut(betaHat=betaStart, lambdaIndex=1, lambdaNum, lambdaMod,
-                           xList, xMat, yMat, alpha, positiveID, linkfun,
+                           xList, xMat, yMat, max(alpha, alphaMin), positiveID, linkfun,
                            pMin, threshOut, threshIn, maxiterOut, maxiterIn,
                            printIter, printBeta)
         betaStart <- fits[[1]]$betaHat
@@ -36,11 +36,20 @@ mirlsNet <- function(xList, yMat, alpha, penaltyFactors, positiveID, linkfun, be
         if (includeLambda0) lambdaVals <- c(lambdaVals, 0)
     }
 
-    # If relative change in loglik is < stopThresh, then use the same model fit for all remaining lambda
+    # If alpha < alphaMin, the model needs to be re-fit the first lambda value
+    # using alpha instead of alphaMin
+    if (alpha < alphaMin)
+        fits[1] <- list(NULL)
+
+    # fits[[1]] is NULL if alpha < alphaMin or if lambdaVals is specified by user.
     llik <- if (is.null(fits[[1]])) -Inf else fits[[1]]$loglik
     for (i in (1+!is.null(fits[[1]])):lambdaNum)
     {
-        if (i>2 && abs((llikOld - llik) / llikOld)<stopThresh)
+        # If relative change in loglik is < stopThresh, then use the current fit
+        # for all remaining lambda. Do not stop if loglik stays the same, because
+        # this can happen if the first several lambda values produce null models,
+        # e.g. in cross validation.
+        if ((i > 2) && llikOld != llik && (abs((llikOld - llik) / llikOld) < stopThresh))
         {
             fits[[i]] <- fits[[i-1]]
         } else
@@ -64,9 +73,9 @@ mirlsNet <- function(xList, yMat, alpha, penaltyFactors, positiveID, linkfun, be
     if (any(iterOut==maxiterOut))
         warning(paste0("Reached outer loop iteration limit before convergence ",
                        "for at least one lambda value. Consider increasing maxiterOut."))
-    if (any(iterIn==maxiterIn & dif>0))
-        warning(paste0("Outer loop converged upon inner loop reaching iteration ",
-                       "limit for at least one lambda value. Consider increasing maxiterIn."))
+    # if (any(iterIn==maxiterIn & dif>0))
+    #     warning(paste0("Outer loop converged upon inner loop reaching iteration ",
+    #                    "limit for at least one lambda value. Consider increasing maxiterIn."))
 
     betaHat <- t(sapply(fits, function(f) f$betaHat))
     loglik <- sapply(fits, function(f) f$loglik)

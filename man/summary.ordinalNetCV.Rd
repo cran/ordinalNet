@@ -14,7 +14,7 @@
 \value{
 A data frame containing a record for each cross validation fold.
 Each record contains the following: lambda value, log-likelihood,
-misclassification rate.
+misclassification rate, Brier score, and percentage of deviance explained.
 }
 \description{
 Provides a data frame which summarizes the cross validation results, which

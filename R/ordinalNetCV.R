@@ -3,12 +3,13 @@
 #'
 #' The data is divided into K folds. \code{ordinalNet} is fit \eqn{K} times, each time
 #' leaving out one fold as a test set. For each of the \eqn{K} model fits, lambda
-#' can be tuned by K-fold cross validation (within each fold), or by AIC or BIC
-#' which do not require cross validation. If cross validation is used, the user
-#' has the option to select the lambda value with either the best average out-of-sample
-#' log-likelihood or the best misclassification rate. Once the model is tuned,
-#' the out of sample log-likelihood and misclassification rate are obtained from
-#' the held out test set.
+#' can be tuned by AIC or BIC, or cross validation. If cross validation is used,
+#' the user can choose whether to user the best average out-of-sample log-likelihood,
+#' misclassification rate, Brier score, or percentage of deviance explained.
+#' The user can also choose the number of cross validation folds to use for tuning.
+#' Once the model is tuned, the out of sample log-likelihood,
+#' misclassification rate, Brier score, and percentage of deviance explained
+#' are calculated on the held out test set.
 #'
 #' @param x Covariate matrix.
 #' @param y Response variable. Can be a factor, ordered factor, or a matrix
@@ -31,13 +32,13 @@
 #' @param nFolds Numer of cross validation folds. Only used if \code{folds=NULL}.
 #' @param nFoldsCV Number of cross validation folds used to tune lambda for each
 #' training set (i.e. within each training fold). Only used of \code{tuneMethod} is
-#' "cvLoglik" or "cvMisclass".
+#' "cvLoglik", "cvMisclass", "cvBrier", or "cvDevPct.
 #' @param tuneMethod Method used to tune lambda for each training set (ie. within
-#' each training fold). The "cvLoglik" and "cvMisclass" methods use K-fold cross validation
-#' with \code{nFoldsCV} folds. "cvLoglik chooses lambda with the best average
-#' out-of-sample log-likelihood. "cvMisclass" chooses lambda with the best
-#' average misclassification rate. The "aic" and "bic" methods are less computationally
-#' intensive because they do not require cross validation to select lambda.
+#' each training fold). The "cvLoglik", "cvMisclass", "cvBrier", and "cvDevPct"
+#' methods use cross validation with \code{nFoldsCV} folds and select the
+#' lambda value with the best average out-of-sample performance. The "aic" and "bic"
+#' methods are less computationally intensive because they do not require the
+#' model to be fit multiple times.
 #' Note that for the methods that require cross validation, the fold splits are
 #' determined randomly and cannot be specified by the user. The \code{set.seed()}
 #' function should be called prior to \code{ordinalNetCV} for reproducibility.
@@ -75,10 +76,14 @@
 #' @return
 #' An S3 object of class "ordinalNetCV", which contains the following:
 #' \describe{
-#'   \item{loglik}{Vector of out of sample log-likelihood values. Each value
-#'   corresponds to a different fold.}
-#'   \item{misclass}{Vector of out of sample misclassificaton rates. Each value
-#'   corresponds to a different fold.}
+#'   \item{loglik}{Vector of out-of-sample log-likelihood values.
+#'   Each value corresponds to a different fold.}
+#'   \item{misclass}{Vector of out-of-sample misclassificaton rates.
+#'   Each value corresponds to a different fold.}
+#'   \item{brier}{Vector of out-of-sample Brier scores.
+#'   Each value corresponds to a different fold.}
+#'   \item{devPct}{Vector of out-of-sample percentages of deviance explained.
+#'   Each value corresponds to a different fold.}
 #'   \item{bestLambdaIndex}{The index of the value within the lambda sequence
 #'   selected for each fold by the tuning method.}
 #'   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
@@ -113,13 +118,18 @@
 #'
 #' @export
 ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5,
-                         tuneMethod=c("cvLoglik", "cvMisclass", "aic", "bic"),
+                         tuneMethod=c("cvLoglik", "cvMisclass", "cvBrier", "cvDevPct",
+                                      "aic", "bic"),
                          printProgress=TRUE, warn=TRUE, ...)
 {
     tuneMethod <- match.arg(tuneMethod)
-    cvID <- tuneMethod %in% c("cvLoglik", "cvMisclass")  # indicator to use cross validation within folds
+    # cvID := indicator to use cross validation within folds
+    cvID <- tuneMethod %in% c("cvLoglik", "cvMisclass", "cvBrier", "cvDevPct")
+    # tuneMethod := argument passed to ordinalNetTune
     if (tuneMethod == "cvLoglik") cvCriterion <- "loglik"
     if (tuneMethod == "cvMisclass") cvCriterion <- "misclass"
+    if (tuneMethod == "cvBrier") cvCriterion <- "brier"
+    if (tuneMethod == "cvDevPct") cvCriterion <- "devPct"
 
     # Argument checks
     if (is.matrix(y) && any(rowSums(y)!=1))
@@ -148,8 +158,9 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
     }
 
     nLambda <- length(lambdaVals)
-    loglik <- misclass <- bestLambdaIndex <- rep(NA, nFolds)
-    names(loglik) <- names(misclass) <- names(bestLambdaIndex) <- paste0("fold", 1:nFolds)
+    loglik <- misclass <- brier <- devPct <- bestLambdaIndex <- rep(NA, nFolds)
+    names(loglik) <- names(misclass) <- names(brier) <- names(devPct) <-
+        names(bestLambdaIndex) <- paste0("fold", 1:nFolds)
     for (i in 1:nFolds)
     {
         testFold <- folds[[i]]
@@ -164,25 +175,30 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
             fitTrainCV <- ordinalNetTune(xTrain, yTrain, lambdaVals=lambdaVals, folds=NULL,
                                nFolds=5, printProgress=FALSE, warn=FALSE, ...)
             fitTrain <- fitTrainCV$fit
-            bestLambdaIndex[[i]] <- which.max(rowMeans(fitTrainCV[[cvCriterion]]))  # cvCriterion is either "loglik" or "misclass"
-        } else
+            if (cvCriterion %in% c("loglik", "devPct"))
+                wm <- which.max
+            if (cvCriterion %in% c("misclass", "brier"))
+                wm <- which.min
+            bestLambdaIndex[[i]] <- wm(rowMeans(fitTrainCV[[cvCriterion]]))
+        } else  # tuneMethod is either "aic" or "bic"
         {
             fitTrain <- ordinalNet(xTrain, yTrain, lambdaVals=lambdaVals, warn=FALSE, ...)
-            bestLambdaIndex[[i]] <- which.min(fitTrain[[tuneMethod]])  # tuneMethod is either "aic" or "bic"
+            bestLambdaIndex[[i]] <- which.min(fitTrain[[tuneMethod]])
         }
 
-        pHat <- predict.ordinalNet(fitTrain, newx=xTest, type="response", whichLambda=bestLambdaIndex[[i]])
-        pHat1 <- pHat[, -ncol(pHat), drop=FALSE]
-        loglik[i] <- getLoglik(pHat1, yMatTest)
-        predClass <- apply(pHat, 1, which.max)
-        nMisclass <- sapply(1:nrow(yMatTest), function(j) sum(yMatTest[j, -predClass[j]]))
-        misclass[i] <- sum(nMisclass) / sum(yMatTest)
+        pHatFull <- predict.ordinalNet(fitTrain, newx=xTest, type="response", whichLambda=bestLambdaIndex[[i]])
+        pHat <- pHatFull[, -ncol(pHatFull), drop=FALSE]
+        loglik[i] <- getLoglik(pHat, yMatTest)
+        misclass[i] <- getMisclass(pHat, yMatTest)
+        brier[i] <- getBrier(pHat, yMatTest)
+        loglikNull <- getLoglikNull(yMatTest)
+        devPct[i] <- 1 - loglik[i] / loglikNull
     }
 
     if (printProgress) cat("Done\n")
 
-    out <- list(loglik=loglik, misclass=misclass, bestLambdaIndex=bestLambdaIndex,
-                lambdaVals=lambdaVals, folds=folds, fit=fit)
+    out <- list(loglik=loglik, misclass=misclass, brier=brier, devPct=devPct,
+                bestLambdaIndex=bestLambdaIndex, lambdaVals=lambdaVals, folds=folds, fit=fit)
     class(out) <- "ordinalNetCV"
     out
 }
@@ -198,7 +214,7 @@ ordinalNetCV <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, nFoldsCV=5
 #'
 #' @return A data frame containing a record for each cross validation fold.
 #' Each record contains the following: lambda value, log-likelihood,
-#' misclassification rate.
+#' misclassification rate, Brier score, and percentage of deviance explained.
 #'
 #' @seealso
 #' \code{\link{ordinalNetCV}}
@@ -212,7 +228,9 @@ summary.ordinalNetCV <- function(object, ...)
     lambda <- object$lambdaVals[object$bestLambdaIndex]
     loglik <- object$loglik
     misclass <- object$misclass
-    data.frame(lambda=lambda, loglik=loglik, misclass=misclass)
+    brier <- object$brier
+    devPct <- object$devPct
+    data.frame(lambda=lambda, loglik=loglik, misclass=misclass, brier=brier, devPct=devPct)
 }
 
 #' Print method for an "ordinalNetCV" object.

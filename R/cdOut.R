@@ -37,11 +37,28 @@ cdOut <- function(betaHat, lambdaIndex, lambdaNum, lambdaMod,
         betaNonzeroIndex <- which(betaHat != 0)
         etaMat <- matrix(xMat[, betaNonzeroIndex, drop=FALSE] %*% betaHat[betaNonzeroIndex], nrow=nObs, byrow=TRUE)
         pMat <- do.call(rbind, lapply(1:nrow(etaMat), function(i) linkfun$h(etaMat[i, ])))
+
+        # Update log-likelihood and objective
         loglikOld <- loglik
         objOld <- obj
         loglik <- getLoglik(pMat, yMat)
         penalty <- getPenalty(betaHat, lambdaMod, alpha)
         obj <- -loglik / wtsum + penalty
+
+        # Take half steps if obj does not improve. Loglik is set to -Inf
+        # if any fitted probabilities are negative, which can happen for
+        # the nonparallel or semiparallel cumulative probability model.
+        nhalf <- 0
+        while (obj > objOld && nhalf < 10) {
+            nhalf <- nhalf + 1
+            betaHat <- (betaHat + betaHatOld) / 2
+            betaNonzeroIndex <- which(betaHat != 0)
+            etaMat <- matrix(xMat[, betaNonzeroIndex, drop=FALSE] %*% betaHat[betaNonzeroIndex], nrow=nObs, byrow=TRUE)
+            pMat <- do.call(rbind, lapply(1:nrow(etaMat), function(i) linkfun$h(etaMat[i, ])))
+            loglik <- getLoglik(pMat, yMat)
+            penalty <- getPenalty(betaHat, lambdaMod, alpha)
+            obj <- -loglik / wtsum + penalty
+        }
         dif <- (objOld - obj) / (abs(objOld) + 1e-100)
         conv <- dif < threshOut
 

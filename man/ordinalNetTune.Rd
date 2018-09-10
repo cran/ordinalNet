@@ -50,10 +50,14 @@ passed to \code{ordinalNet}.}
 \value{
 An S3 object of class "ordinalNetTune", which contains the following:
 \describe{
-  \item{loglik}{Matrix of out of sample log-likelihood values. Each row corresponds
-  to a different lambda value, and each column corresponds to a different fold.}
-  \item{misclass}{Matrix of out of sample misclassificaton rates. Each row corresponds
-  to a different lambda value, and each column corresponds to a different fold.}
+  \item{loglik}{Matrix of out-of-sample log-likelihood values.
+  Each row corresponds to a lambda value, and each column corresponds to a fold.}
+  \item{misclass}{Matrix of out-of-sample misclassificaton rates.
+  Each row corresponds to a lambda value, and each column corresponds to a fold.}
+  \item{brier}{Matrix of out-of-sample Brier scores. Each row corresponds
+  to a lambda value, and each column corresponds to a fold.}
+  \item{devPct}{Matrix of out-of-sample percentages of deviance explained.
+  Each row corresponds to a lambda value, and each column corresponds to a fold.}
   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
   \item{folds}{A list containing the index numbers of each fold.}
   \item{fit}{An object of class "ordinalNet", resulting from fitting
@@ -63,9 +67,10 @@ An S3 object of class "ordinalNetTune", which contains the following:
 \description{
 The data is divided into K folds. \code{ordinalNet} is fit \eqn{K} times (\code{K=nFolds}),
 each time leaving out one fold as a test set. The same sequence of lambda values is used
-each time. The out-of-sample log-likelihood and misclassification rate
-are obtained for each lambda value from the held out test set.
-It is up to the user to determine how to tune the model using this information.
+each time. The out-of-sample log-likelihood, misclassification rate, Brier score,
+and percentage of deviance explained are obtained for each lambda value from
+the held out test set. It is up to the user to determine how to tune the model
+using this information.
 }
 \details{
 \itemize{
