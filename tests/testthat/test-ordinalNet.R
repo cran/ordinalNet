@@ -1,3 +1,4 @@
+context("Compare ordinalNet results against other packages.")
 MASSInst <- require(MASS)
 glmnetInst <- require(glmnet)
 penalizedInst <- require(penalized)
@@ -33,12 +34,12 @@ vglmtest <- function(family, link, f1, f2, f3, f4, tol)
 
     # nonparallel - check coefficients in matrix form
     o <- ordinalNet(x, y, lambdaVals=0, family=family, link=link,
-                    reverse=FALSE, parallelTerms=FALSE, nonparallelTerms=TRUE)
+                    reverse=FALSE, parallelTerms=FALSE, nonparallelTerms=TRUE,
+                    warn=FALSE)
     v <- vglm(as.ordered(y)~x, family=f2)
     coefo <- coef(o, matrix=TRUE)
     coefv <- coef(v, matrix=TRUE)
     expect_equal(coefo, coefv, check.attributes=FALSE, tolerance=tol)
-    if (family != "acat") expect_equal(colnames(coefo), colnames(coefv))
     rm(o, v, coefo, coefv)
 
     # parallel, reverse - check coefficients in matrix form
@@ -49,18 +50,17 @@ vglmtest <- function(family, link, f1, f2, f3, f4, tol)
     coefv <- coef(v, matrix=TRUE)
     coefvr <- coefv[, ncol(coefv):1]
     expect_equal(coefo, coefvr, check.attributes=FALSE, tolerance=tol)
-    if (family != "acat") expect_equal(colnames(coefo), colnames(coefvr))
     rm(o, v, coefo, coefv, coefvr)
 
     # nonparallel, reverse - check coefficients in matrix form
     o <- ordinalNet(x, y, lambdaVals=0, family=family, link=link,
-                    reverse=TRUE, parallelTerms=FALSE, nonparallelTerms=TRUE)
+                    reverse=TRUE, parallelTerms=FALSE, nonparallelTerms=TRUE,
+                    warn=FALSE)
     v <- vglm(as.ordered(y)~x, family=f4)
     coefo <- coef(o, matrix=TRUE)
     coefv <- coef(v, matrix=TRUE)
     coefvr <- coefv[, ncol(coefv):1]
     expect_equal(coefo, coefvr, check.attributes=FALSE, tolerance=tol)
-    if (family != "acat") expect_equal(colnames(coefo), colnames(coefvr))
     rm(o, v, coefo, coefv, coefvr)
 
     return(NULL)

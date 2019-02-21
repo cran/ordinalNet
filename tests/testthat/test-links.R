@@ -1,4 +1,5 @@
-## Test link functions
+context("Test link functions.")
+
 testlink <- function(lf, p=c(.1, .4, .2), eps=1e-8)
 {
 

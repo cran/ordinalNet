@@ -1,5 +1,5 @@
-f528a8cba970bcea58250f43dad05f3c *DESCRIPTION
-f32bd1b70e3fbe6746ea1aa37d82be95 *LICENSE
+209b9ed6dbe9973cb855a35d6125fe2d *DESCRIPTION
+8b890e9eac38c09af2312dafa74a70b2 *LICENSE
 df30ed86d4b4b5bad760d4580c83a042 *NAMESPACE
 041752786d935a6215e31b279bc0087b *R/cdIn.R
 bbd95d7d476b8f452288fb5ded9e9063 *R/cdOut.R
@@ -11,11 +11,11 @@ e165e13c67e569d3cf4b3a79b5e9dd3c *R/ordinalNet.R
 9bcda1f5033d10e69c7095b597016d3e *R/ordinalNetCV.R
 c15dd16318d0817004a563191124ca13 *R/ordinalNetTune.R
 5e9d2c85b602f77f5b8d198bd339cd23 *man/coef.ordinalNet.Rd
-e44f6644aec7f316ce9e753297b85332 *man/ordinalNet.Rd
+074bade24f9b144af82b140565376f38 *man/ordinalNet.Rd
 652aee2affe79662646365eac4103f41 *man/ordinalNetCV.Rd
 4f7b14d5c9f74cbc7e9e74c0c731d2df *man/ordinalNetTune.Rd
 6bcd98c085d491b2167b4f5b1c731b5c *man/plot.ordinalNetTune.Rd
-f8e3e4e6728cf549cf90b7f5e586327a *man/predict.ordinalNet.Rd
+a62a07ba6890a8345e67ca1f9f57c527 *man/predict.ordinalNet.Rd
 bb8c481bb0d910d8d0b6030339a9fc58 *man/print.ordinalNet.Rd
 cf889d1059ae5ed9fbaf531ca8f3b3e7 *man/print.ordinalNetCV.Rd
 f7c5356e2b2fc83b0f59c4bc8c1f0695 *man/print.ordinalNetTune.Rd
@@ -23,5 +23,5 @@ f7c5356e2b2fc83b0f59c4bc8c1f0695 *man/print.ordinalNetTune.Rd
 725f656951bcc22725b1cc18793ad952 *man/summary.ordinalNetCV.Rd
 4a7a8ffe66935d0618c4e72448552077 *man/summary.ordinalNetTune.Rd
 cc659af7b6b6bc227370c3bffea98b62 *tests/testthat.R
-edd91db9d16e8b9d85b316bd0ae2e6b9 *tests/testthat/test-links.R
-b1adba8be0ca64f8d773f349be9747ac *tests/testthat/test-ordinalNet.R
+9b465c8deb2c95d23fdb94f09582f51a *tests/testthat/test-links.R
+4c729241bea4a8c5ea75c8a2aa067b83 *tests/testthat/test-ordinalNet.R

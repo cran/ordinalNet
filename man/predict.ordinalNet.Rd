@@ -5,7 +5,8 @@
 \title{Predict method for an "ordinalNet" object}
 \usage{
 \method{predict}{ordinalNet}(object, newx = NULL, whichLambda = NULL,
-  criteria = c("aic", "bic"), type = c("response", "class", "link"), ...)
+  criteria = c("aic", "bic"), type = c("response", "class", "link"),
+  ...)
 }
 \arguments{
 \item{object}{An "ordinalNet" S3 object.}
