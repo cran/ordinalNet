@@ -4,17 +4,36 @@
 \alias{ordinalNet}
 \title{Ordinal regression models with elastic net penalty}
 \usage{
-ordinalNet(x, y, alpha = 1, standardize = TRUE,
-  penaltyFactors = NULL, positiveID = NULL, family = c("cumulative",
-  "sratio", "cratio", "acat"), reverse = FALSE, link = c("logit",
-  "probit", "cloglog", "cauchit"), customLink = NULL,
-  parallelTerms = TRUE, nonparallelTerms = FALSE,
-  parallelPenaltyFactor = 1, lambdaVals = NULL, nLambda = 20,
-  lambdaMinRatio = 0.01, includeLambda0 = FALSE, alphaMin = 0.01,
-  pMin = 1e-08, stopThresh = 1e-08, threshOut = 1e-08,
-  threshIn = 1e-08, maxiterOut = 100, maxiterIn = 100,
-  printIter = FALSE, printBeta = FALSE, warn = TRUE,
-  keepTrainingData = TRUE)
+ordinalNet(
+  x,
+  y,
+  alpha = 1,
+  standardize = TRUE,
+  penaltyFactors = NULL,
+  positiveID = NULL,
+  family = c("cumulative", "sratio", "cratio", "acat"),
+  reverse = FALSE,
+  link = c("logit", "probit", "cloglog", "cauchit"),
+  customLink = NULL,
+  parallelTerms = TRUE,
+  nonparallelTerms = FALSE,
+  parallelPenaltyFactor = 1,
+  lambdaVals = NULL,
+  nLambda = 20,
+  lambdaMinRatio = 0.01,
+  includeLambda0 = FALSE,
+  alphaMin = 0.01,
+  pMin = 1e-08,
+  stopThresh = 1e-08,
+  threshOut = 1e-08,
+  threshIn = 1e-08,
+  maxiterOut = 100,
+  maxiterIn = 100,
+  printIter = FALSE,
+  printBeta = FALSE,
+  warn = TRUE,
+  keepTrainingData = TRUE
+)
 }
 \arguments{
 \item{x}{Covariate matrix. It is recommended that categorical covariates are

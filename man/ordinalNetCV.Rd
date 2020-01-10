@@ -5,9 +5,18 @@
 \title{Uses K-fold cross validation to obtain out-of-sample log-likelihood and
 misclassification rates. Lambda is tuned within each cross validation fold.}
 \usage{
-ordinalNetCV(x, y, lambdaVals = NULL, folds = NULL, nFolds = 5,
-  nFoldsCV = 5, tuneMethod = c("cvLoglik", "cvMisclass", "cvBrier",
-  "cvDevPct", "aic", "bic"), printProgress = TRUE, warn = TRUE, ...)
+ordinalNetCV(
+  x,
+  y,
+  lambdaVals = NULL,
+  folds = NULL,
+  nFolds = 5,
+  nFoldsCV = 5,
+  tuneMethod = c("cvLoglik", "cvMisclass", "cvBrier", "cvDevPct", "aic", "bic"),
+  printProgress = TRUE,
+  warn = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{Covariate matrix.}

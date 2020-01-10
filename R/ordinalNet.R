@@ -295,8 +295,14 @@ ordinalNet <- function(x, y, alpha=1, standardize=TRUE, penaltyFactors=NULL, pos
     # Initial argument checks
     if (!is.matrix(x))
         stop("x should be a matrix.")
+    if (any(is.na(x)))
+        stop("x must not contain missing values.")
+    if (any(abs(x) == Inf))
+        stop("x must not contain infinite values.")
     if (!is.factor(y) && !is.matrix(y))
         stop("y should be a factor or matrix.")
+    if (any(is.na(y)))
+        stop("y must not contain missing values.")
 
     # Variable definitions
     yMat <- if (is.matrix(y)) y else yFactorToMatrix(y)

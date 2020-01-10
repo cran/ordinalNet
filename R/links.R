@@ -63,9 +63,11 @@ makeLinkRatio <- function(link, stopping)
         p <- rep(NA, k)
         p[1] <- delta[1]
         cp <- 1 - p[1]  # 1-cumulative probability dummy variable
-        for (i in 2:k) {
-            p[i] <- delta[i] * cp
-            cp <- cp - p[i]
+        if (k >= 2) {
+            for (i in 2:k) {
+                p[i] <- delta[i] * cp
+                cp <- cp - p[i]
+            }
         }
         p
     }
@@ -78,10 +80,12 @@ makeLinkRatio <- function(link, stopping)
         ttip <- matrix(nrow=k, ncol=k)
         ttip[1, ] <- c(1, rep(0, k-1))
         cs <- ttip[1, ]  # cumulative row sum dummy variable
-        for (i in 2:k) {
-            ttip[i, ] <- -delta[i] * cs
-            ttip[i, i] <- cp[i]
-            cs <- cs + ttip[i, ]
+        if (k >= 2) {
+            for (i in 2:k) {
+                ttip[i, ] <- -delta[i] * cs
+                ttip[i, i] <- cp[i]
+                cs <- cs + ttip[i, ]
+            }
         }
         ttip
     }
@@ -131,9 +135,11 @@ makeLinkACAT <- function(link)
         ar <- delta / (1-delta)  # adjacent ratios p2/p1, p3/p2, ... , pk+1/pk
         dttdar <- matrix(nrow=k, ncol=k)  # jacobian of ttinv with respect to ar
         dttdar[1, ] <- -p1 * (1-cp) / ar
-        for (i in 2:k) {
-            dttdar[i, ] <- ar[i-1] * dttdar[i-1, ]
-            dttdar[i, i-1] <- dttdar[i, i-1] + p[i-1]
+        if (k >= 2) {
+            for (i in 2:k) {
+                dttdar[i, ] <- ar[i-1] * dttdar[i-1, ]
+                dttdar[i, i-1] <- dttdar[i, i-1] + p[i-1]
+            }
         }
         darddelta <- 1 / (1-delta)^2  # jacobian of ar with respect to delta (diagonal matrix)
         ttip <- rep(darddelta, each=k) * dttdar  # multiply each row of dttdar by darddelta

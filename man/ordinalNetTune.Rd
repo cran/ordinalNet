@@ -5,8 +5,16 @@
 \title{Uses K-fold cross validation to obtain out-of-sample log-likelihood and
 misclassification rates for a sequence of lambda values.}
 \usage{
-ordinalNetTune(x, y, lambdaVals = NULL, folds = NULL, nFolds = 5,
-  printProgress = TRUE, warn = TRUE, ...)
+ordinalNetTune(
+  x,
+  y,
+  lambdaVals = NULL,
+  folds = NULL,
+  nFolds = 5,
+  printProgress = TRUE,
+  warn = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{Covariate matrix.}

@@ -132,7 +132,7 @@ test_that("Unpenalized acat logit/loge matches VGAM::vglm - multiple response va
     pneumo <- transform(pneumo, let = log(exposure.time))
     pneumox <- as.matrix(pneumo["let"])
     pneumoyMat <- as.matrix(pneumo[c("normal", "mild", "severe")])
-        # this is the category order used in the VGAM::acat example: is it really correct?
+    # this is the category order used in the VGAM::acat example: is it really correct?
 
     # nonparallel - check coefficients in matrix form
     o <- ordinalNet(pneumox, pneumoyMat, lambdaVals=0, family="acat", link="logit",
@@ -182,18 +182,18 @@ test_that("Binary logistic regression with positive constraints matches penalize
 
 test_that("Elastic net sratio matches glmnetcr::glmnet.cr", {
     if (!glmnetcrInst) skip("glmnetcr >= 1.0.3 not installed")
-    # Unpenalized sratio
-    o <- ordinalNet(x, y, lambdaVals=0, family="sratio", link="logit")
-    g <- glmnetcr(x, y, lambda=0, method="forward")
-    coefg <- with(coef(g, s=1), (c(tail(beta, k) + a0, head(beta, -k))))
-    expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=1e-2)
-    rm(o, g, coefg)
-    # Unpenalized sratio, reverse
-    o <- ordinalNet(x, y, lambdaVals=0, family="sratio", link="logit", reverse=TRUE)
-    g <- glmnetcr(x, y, lambda=0, method="backward")
-    coefg <- with(coef(g, s=1), (c(rev(tail(beta, k)) + a0, head(beta, -k))))
-    expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.02)
-    rm(o, g, coefg)
+    # Unpenalized sratio (do not run: glmnetcr cannot fit unpenalized model as of version 1.0.5)
+    # o <- ordinalNet(x, y, lambdaVals=0, family="sratio", link="logit")
+    # g <- glmnetcr(x, y, lambda=0, method="forward")
+    # coefg <- with(coef(g, s=1), (c(tail(beta, k) + a0, head(beta, -k))))
+    # expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=1e-2)
+    # rm(o, g, coefg)
+    # Unpenalized sratio, reverse (do not run: glmnetcr cannot fit unpenalized model as of version 1.0.5)
+    # o <- ordinalNet(x, y, lambdaVals=0, family="sratio", link="logit", reverse=TRUE)
+    # g <- glmnetcr(x, y, lambda=0, method="backward")
+    # coefg <- with(coef(g, s=1), (c(rev(tail(beta, k)) + a0, head(beta, -k))))
+    # expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.02)
+    # rm(o, g, coefg)
     # Penalized sratio
     # Matches reasonably well, but difference is more than just convergence error
     # Not sure why glmnet.cr uses approx. .5*lambda

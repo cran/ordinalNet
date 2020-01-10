@@ -4,8 +4,7 @@
 \alias{plot.ordinalNetTune}
 \title{Plot method for "ordinalNetTune" object.}
 \usage{
-\method{plot}{ordinalNetTune}(x, type = c("loglik", "misclass", "brier",
-  "devPct"), ...)
+\method{plot}{ordinalNetTune}(x, type = c("loglik", "misclass", "brier", "devPct"), ...)
 }
 \arguments{
 \item{x}{An "ordinalNetTune" S3 object.}

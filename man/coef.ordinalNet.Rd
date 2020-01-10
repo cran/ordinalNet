@@ -4,8 +4,13 @@
 \alias{coef.ordinalNet}
 \title{Method to extract fitted coefficients from an "ordinalNet" object.}
 \usage{
-\method{coef}{ordinalNet}(object, matrix = FALSE, whichLambda = NULL,
-  criteria = c("aic", "bic"), ...)
+\method{coef}{ordinalNet}(
+  object,
+  matrix = FALSE,
+  whichLambda = NULL,
+  criteria = c("aic", "bic"),
+  ...
+)
 }
 \arguments{
 \item{object}{An "ordinalNet" S3 object.}
