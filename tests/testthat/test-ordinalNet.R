@@ -196,19 +196,19 @@ test_that("Elastic net sratio matches glmnetcr::glmnet.cr", {
     # rm(o, g, coefg)
     # Penalized sratio
     # Matches reasonably well, but difference is more than just convergence error
-    # Not sure why glmnet.cr uses approx. .5*lambda
+    # Not sure why glmnet.cr lambda needs to be multiplied by about 0.5 to match.
     # Standardizing covariates does not change this, and it's the same for alpha=0 and alpha=1
     o <- ordinalNet(x, y, alpha=.5, lambdaVals=.1, family="sratio", link="logit")
-    g <- glmnetcr(x, y, alpha=.5, lambda=.1/2, method="forward")
+    g <- glmnetcr(x, y, alpha=.5, lambda=.1/2, method="forward", exclude=NULL)
     coefg <- with(coef(g, s=1), (c(tail(beta, k) + a0, head(beta, -k))))
     expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.1)
     rm(o, g, coefg)
     # Penalized sratio, reverse
     # Matches reasonably well, but difference is more than just convergence error
-    # Not sure why glmnet.cr uses approx. .5*lambda
+    # Not sure why glmnet.cr lambda needs to be multiplied by about 0.5 to match.
     # Standardizing covariates does not change this, and it's the same for alpha=0 and alpha=1
     o <- ordinalNet(x, y, alpha=.5, lambdaVals=.1, family="sratio", link="logit", reverse=TRUE)
-    g <- glmnetcr(x, y, alpha=.5, lambda=.1/2, method="backward")
+    g <- glmnetcr(x, y, alpha=.5, lambda=.1/2, method="backward", exclude=NULL)
     coefg <- with(coef(g, s=1), (c(rev(tail(beta, k)) + a0, head(beta, -k))))
     expect_equal(coef(o), coefg, check.attributes=FALSE, tolerance=.1)
     rm(o, g, coefg)
