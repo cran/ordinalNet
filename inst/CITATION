@@ -1,0 +1,19 @@
+bibentry(bibtype = "Article",
+  title        = "Regularized Ordinal Regression and the {ordinalNet} {R} Package",
+  author       = c(person(given = c("Michael", "J."),
+                          family = "Wurm",
+                          email = "wurm@uwalumni.com"),
+                   person(given = c("Paul", "J."),
+                          family = "Rathouz",
+                          email = "paul.rathouz@austin.utexas.edu"),
+                   person(given = c("Bret", "M."),
+                          family = "Hanlon",
+                          email = "bret.hanlon@wisc.edu")),
+  journal      = "Journal of Statistical Software",
+  year         = "2021",
+  volume       = "99",
+  number       = "6",
+  pages        = "1--42",
+  doi          = "10.18637/jss.v099.i06"
+)
+
