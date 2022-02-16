@@ -6,13 +6,13 @@ VGAMInst <- require(VGAM)
 rmsInst <- require(rms)
 
 # Simulate data from cumulative logit model
-set.seed(4)
-n <- 50
+set.seed(1)
+n <- 100
 zeta <- c(-1, 1)
 beta <- c(1, 1, 0, 0, 0)
 k <- length(zeta)
 p <- length(beta)
-x <- matrix(rnorm(n*p, sd=2), nrow=n)
+x <- matrix(runif(n*p, -1, 1), nrow=n)
 eta <- c(x %*% beta) + matrix(rep(zeta, each=n), ncol=k)
 cdf <- exp(eta) / (1+exp(eta))
 prob <- cbind(cdf, 1) - cbind(0, cdf)
@@ -80,10 +80,10 @@ test_that("Unpenalized cumulative logit matches VGAM::vglm", {
     if (!VGAMInst) skip("VGAM not installed")
     family <- "cumulative"
     link <- "logit"
-    f1 <- cumulative(link="logit", parallel=TRUE, reverse=FALSE)
-    f2 <- cumulative(link="logit", parallel=FALSE, reverse=FALSE)
-    f3 <- cumulative(link="logit", parallel=TRUE, reverse=TRUE)
-    f4 <- cumulative(link="logit", parallel=FALSE, reverse=TRUE)
+    f1 <- cumulative(link="logitlink", parallel=TRUE, reverse=FALSE)
+    f2 <- cumulative(link="logitlink", parallel=FALSE, reverse=FALSE)
+    f3 <- cumulative(link="logitlink", parallel=TRUE, reverse=TRUE)
+    f4 <- cumulative(link="logitlink", parallel=FALSE, reverse=TRUE)
     tol <- 1e-3
     vglmtest(family, link, f1, f2, f3, f4, tol)
 })
@@ -92,10 +92,10 @@ test_that("Unpenalized sratio probit matches VGAM::vglm", {
     if (!VGAMInst) skip("VGAM not installed")
     family <- "sratio"
     link <- "probit"
-    f1 <- sratio(link="probit", parallel=TRUE, reverse=FALSE)
-    f2 <- sratio(link="probit", parallel=FALSE, reverse=FALSE)
-    f3 <- sratio(link="probit", parallel=TRUE, reverse=TRUE)
-    f4 <- sratio(link="probit", parallel=FALSE, reverse=TRUE)
+    f1 <- sratio(link="probitlink", parallel=TRUE, reverse=FALSE)
+    f2 <- sratio(link="probitlink", parallel=FALSE, reverse=FALSE)
+    f3 <- sratio(link="probitlink", parallel=TRUE, reverse=TRUE)
+    f4 <- sratio(link="probitlink", parallel=FALSE, reverse=TRUE)
     tol <- 1e-3
     vglmtest(family, link, f1, f2, f3, f4, tol)
 })
@@ -104,10 +104,10 @@ test_that("Unpenalized cratio cloglog matches VGAM::vglm", {
     if (!VGAMInst) skip("VGAM not installed")
     family <- "cratio"
     link <- "cloglog"
-    f1 <- cratio(link="cloglog", parallel=TRUE, reverse=FALSE)
-    f2 <- cratio(link="cloglog", parallel=FALSE, reverse=FALSE)
-    f3 <- cratio(link="cloglog", parallel=TRUE, reverse=TRUE)
-    f4 <- cratio(link="cloglog", parallel=FALSE, reverse=TRUE)
+    f1 <- cratio(link="clogloglink", parallel=TRUE, reverse=FALSE)
+    f2 <- cratio(link="clogloglink", parallel=FALSE, reverse=FALSE)
+    f3 <- cratio(link="clogloglink", parallel=TRUE, reverse=TRUE)
+    f4 <- cratio(link="clogloglink", parallel=FALSE, reverse=TRUE)
     tol <- 1e-3
     vglmtest(family, link, f1, f2, f3, f4, tol)
 })
@@ -118,10 +118,11 @@ test_that("Unpenalized acat logit/loge matches VGAM::vglm", {
     if (!VGAMInst) skip("VGAM not installed")
     family <- "acat"
     link <- "logit"
-    f1 <- acat(link="loge", parallel=TRUE, reverse=FALSE)
-    f2 <- acat(link="loge", parallel=FALSE, reverse=FALSE)
-    f3 <- acat(link="loge", parallel=TRUE, reverse=TRUE)
-    f4 <- acat(link="loge", parallel=FALSE, reverse=TRUE)
+    # link="loge" is deprecated, use "loglink" instead.
+    f1 <- acat(link="loglink", parallel=TRUE, reverse=FALSE)
+    f2 <- acat(link="loglink", parallel=FALSE, reverse=FALSE)
+    f3 <- acat(link="loglink", parallel=TRUE, reverse=TRUE)
+    f4 <- acat(link="loglink", parallel=FALSE, reverse=TRUE)
     tol <- 1e-3
     vglmtest(family, link, f1, f2, f3, f4, tol)
 })

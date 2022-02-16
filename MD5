@@ -1,5 +1,5 @@
-aad916a008f35fdc76c354f21494b986 *DESCRIPTION
-caa2229e00109f0f7d0e8a964fe6df76 *LICENSE
+66b2db16dc57bace60e209f1dbbc1924 *DESCRIPTION
+44bdc16763710831afe638eee795dedf *LICENSE
 df30ed86d4b4b5bad760d4580c83a042 *NAMESPACE
 041752786d935a6215e31b279bc0087b *R/cdIn.R
 bbd95d7d476b8f452288fb5ded9e9063 *R/cdOut.R
@@ -25,4 +25,4 @@ f7c5356e2b2fc83b0f59c4bc8c1f0695 *man/print.ordinalNetTune.Rd
 4a7a8ffe66935d0618c4e72448552077 *man/summary.ordinalNetTune.Rd
 cc659af7b6b6bc227370c3bffea98b62 *tests/testthat.R
 9b465c8deb2c95d23fdb94f09582f51a *tests/testthat/test-links.R
-744596c7d09b7cd409480a828497f659 *tests/testthat/test-ordinalNet.R
+9a5d9e2ab0b329d0d8d86f5dfc5f7505 *tests/testthat/test-ordinalNet.R
