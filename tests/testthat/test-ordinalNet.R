@@ -176,7 +176,7 @@ test_that("Binary logistic regression with positive constraints matches penalize
     # Note: constraints are in play for X3 and X4
     positiveID <- rep(TRUE, p)
     o <- ordinalNet(x, yy, alpha=.5, lambdaVals=0, family="cumulative", link="logit", positiveID=positiveID)
-    pp <- penalized(yy, -x, model="logistic", trace=FALSE, standardize=TRUE, positive=positiveID)
+    pp <- penalized(yy, -x, model="logistic", trace=FALSE, standardize=TRUE, positive=TRUE)
     expect_equal(coef(o), c(-pp@unpenalized, pp@penalized), check.attributes=FALSE)
 })
 
