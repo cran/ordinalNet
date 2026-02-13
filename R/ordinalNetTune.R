@@ -13,11 +13,12 @@
 #' where each row is a multinomial vector of counts. A weighted fit can be obtained
 #' using the matrix option, since the row sums are essentially observation weights.
 #' Non-integer matrix entries are allowed.
-#' @param lambdaVals An optional user-specified lambda sequence (vector). If \code{NULL},
-#' a sequence will be generated using the model fit to the full training data.
-#' This default sequence is based on \code{nLambda} and \code{lambdaMinRatio},
-#' which can be passed as additional arguments (otherwise \code{ordinalNet} default
-#' values are used). The maximum lambda is the smallest value that sets all penalized
+#' @param lambdaVals An optional user-specified lambda sequence (vector), which
+#' will automatically be sorted in descending order. If \code{NULL}, a sequence
+#' will be generated using the model fit to the full training data. This default
+#' sequence is based on \code{nLambda} and \code{lambdaMinRatio}, which can be
+#' passed as additional arguments (otherwise \code{ordinalNet} default values
+#' are used). The maximum lambda is the smallest value that sets all penalized
 #' coefficients to zero, and the minimum lambda is the maximum value multiplied
 #' by the factor \code{lambdaMinRatio}.
 #' @param folds An optional list, where each element is a vector of row indices
@@ -65,7 +66,10 @@
 #'   to a lambda value, and each column corresponds to a fold.}
 #'   \item{devPct}{Matrix of out-of-sample percentages of deviance explained.
 #'   Each row corresponds to a lambda value, and each column corresponds to a fold.}
-#'   \item{lambdaVals}{The sequence of lambda values used for all cross validation folds.}
+#'   \item{lambdaVals}{The sequence of lambda values used for all cross
+#'   validation folds. If user passed a sequence to the \code{lambdaVals}, then
+#'   it is this sequence sorted in descending order. If \code{lambdaVals}
+#'   argument was \code{NULL}, then it is the default sequence generated.}
 #'   \item{folds}{A list containing the index numbers of each fold.}
 #'   \item{fit}{An object of class "ordinalNet", resulting from fitting
 #'   \code{ordinalNet} to the entire dataset.}
@@ -115,7 +119,7 @@ ordinalNetTune <- function(x, y, lambdaVals=NULL, folds=NULL, nFolds=5, printPro
     yMat <- if (is.matrix(y)) y else yFactorToMatrix(y)  # for computing log-likelihood
     if (printProgress) cat("Fitting ordinalNet on full training data\n")
     fit <- ordinalNet(x, y, lambdaVals=lambdaVals, warn=warn, ...)
-    if (is.null(lambdaVals)) lambdaVals <- fit$lambdaVals
+    lambdaVals <- fit$lambdaVals
 
     if (is.null(folds))
     {

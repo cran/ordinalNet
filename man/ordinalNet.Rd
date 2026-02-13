@@ -94,9 +94,10 @@ default. The penalty on all parallel terms is scaled by this factor (as well
 as variable-specific \code{penaltyFactors}). Only used if
 \code{parallelTerms=TRUE}.}
 
-\item{lambdaVals}{An optional user-specified lambda sequence (vector). If \code{NULL},
-a sequence will be generated based on \code{nLambda} and \code{lambdaMinRatio}.
-In this case, the maximum lambda is the smallest value that sets all penalized
+\item{lambdaVals}{An optional user-specified lambda sequence (vector), which
+will automatically be sorted in descending order. If \code{NULL}, a sequence
+will be generated based on \code{nLambda} and \code{lambdaMinRatio}. In this
+case, the maximum lambda is the smallest value that sets all penalized
 coefficients to zero, and the minimum lambda is the maximum value multiplied
 by the factor \code{lambdaMinRatio}.}
 
@@ -174,8 +175,9 @@ through the \code{coef}, \code{predict}, and \code{summary} methods.
   (If covariates were scaled with \code{standardize=TRUE}, the coefficients are
   returned on the original scale).}
   \item{lambdaVals}{Sequence of lambda values. If user passed a sequence to the
-  \code{lambdaVals}, then it is this sequence. If \code{lambdaVals} argument
-  was \code{NULL}, then it is the sequence generated.}
+  \code{lambdaVals}, then it is this sequence sorted in descending order. If
+  \code{lambdaVals} argument was \code{NULL}, then it is the default sequence
+  generated.}
   \item{loglik}{Log-likelihood of each model fit.}
   \item{nNonzero}{Number of nonzero coefficients of each model fit, including intercepts.}
   \item{aic}{AIC, defined as \code{-2*loglik + 2*nNonzero}.}

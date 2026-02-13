@@ -1,7 +1,7 @@
 Package: ordinalNet
 Type: Package
 Title: Penalized Ordinal Regression
-Version: 2.13
+Version: 2.14
 Authors@R: c(
     person("Michael", "Wurm", email = "wurm@uwalumni.com", role = c("aut", "cre")),
     person("Paul", "Rathouz", email = "rathouz@biostat.wisc.edu", role = "aut"),
@@ -26,13 +26,13 @@ License: MIT + file LICENSE
 Imports: stats, graphics
 Suggests: testthat (>= 1.0.2), MASS (>= 7.3-45), glmnet (>= 2.0-5),
         penalized (>= 0.9-50), VGAM (>= 1.0-3), rms (>= 5.1-0)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2025-05-15 16:34:21 UTC; mike
+Packaged: 2026-02-12 19:54:07 UTC; mike
 Author: Michael Wurm [aut, cre],
   Paul Rathouz [aut],
   Bret Hanlon [aut]
 Maintainer: Michael Wurm <wurm@uwalumni.com>
 Repository: CRAN
-Date/Publication: 2025-05-15 18:00:10 UTC
+Date/Publication: 2026-02-13 07:00:08 UTC
